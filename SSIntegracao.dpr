@@ -1,0 +1,26 @@
+program SSIntegracao;
+
+uses
+  Forms,
+  DmdDatabase in '..\ssfacil\DmdDatabase.pas' {dmDatabase: TDataModule},
+  uUtilPadrao in '..\ssfacil\uUtilPadrao.pas',
+  UEscolhe_Filial in '..\ssfacil\UEscolhe_Filial.pas' {frmEscolhe_Filial},
+  UDMIntegracao in 'UDMIntegracao.pas' {DMIntegracao: TDataModule},
+  UIntegracao in 'UIntegracao.pas' {frmIntegracao},
+  rsDBUtils in '..\rslib\nova\rsDBUtils.pas',
+  UDMCadContabil_Ope in 'UDMCadContabil_Ope.pas' {DMCadContabil_Ope: TDataModule},
+  UCadContabil_Ope in 'UCadContabil_Ope.pas' {frmCadContabil_Ope},
+  UCadContabil_Ope_Lacto in 'UCadContabil_Ope_Lacto.pas' {frmCadContabil_Ope_Lacto},
+  logprovider in '..\logs\src\logprovider.pas',
+  LogTypes in '..\logs\src\LogTypes.pas',
+  UConvPlanoContas in 'UConvPlanoContas.pas' {frmConvPlanoContas};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.Title := 'Integração Contábil';
+  Application.CreateForm(TdmDatabase, dmDatabase);
+  Application.CreateForm(TfrmIntegracao, frmIntegracao);
+  Application.Run;
+end.
