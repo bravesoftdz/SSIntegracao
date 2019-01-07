@@ -23,10 +23,10 @@ object frmIntegracao: TfrmIntegracao
     Top = 0
     Width = 1047
     Height = 620
-    ActivePage = TS_Geracao
+    ActivePage = TS_NotaEnt
     ActivePageDefault = TS_Geracao
     Align = alClient
-    TabIndex = 1
+    TabIndex = 2
     TabOrder = 0
     FixedDimension = 19
     object TS_Menu: TRzTabSheet
@@ -511,7 +511,7 @@ object frmIntegracao: TfrmIntegracao
           NoneCaption = 'None'
           TodayCaption = 'Today'
         end
-        object NxButton1: TNxButton
+        object btnGerarNotaEnt: TNxButton
           Left = 146
           Top = 72
           Width = 120
@@ -525,7 +525,7 @@ object frmIntegracao: TfrmIntegracao
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 5
-          OnClick = btnGerarClick
+          OnClick = btnGerarNotaEntClick
         end
         object DirectoryEdit2: TDirectoryEdit
           Left = 146

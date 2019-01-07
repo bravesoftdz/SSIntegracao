@@ -807,28 +807,47 @@ object DMIntegracao: TDMIntegracao
       Size = 15
     end
   end
-  object SQLDataSet1: TSQLDataSet
+  object sdsNota: TSQLDataSet
     NoMetadata = True
     GetMetadata = False
     CommandText = 
-      'SELECT M.*, PRO.unidade UNIDADE_PRODUTO_CAD, PRO.nome NOME_PRODU' +
-      'TO_CAD, PRO.cod_barra COD_BARRA_CAD,'#13#10'PRO.sped_tipo_item, NCM.NC' +
-      'M, CFOP.CODCFOP, CFOP.NOME NOME_CFOP, PES.usa_tamanho_agrupado_n' +
-      'fe, pro.ncm_ex'#13#10'FROM MOVIMENTO M'#13#10'LEFT JOIN PRODUTO PRO'#13#10'ON M.id' +
-      '_produto = PRO.ID'#13#10'LEFT JOIN PESSOA PES'#13#10'ON M.id_pessoa = PES.CO' +
-      'DIGO'#13#10'LEFT JOIN TAB_NCM NCM'#13#10'ON PRO.ID_NCM = NCM.ID'#13#10'LEFT JOIN T' +
-      'AB_CFOP CFOP'#13#10'ON M.ID_CFOP = CFOP.ID'#13#10'WHERE (M.dtentradasaida be' +
-      'tween :DT_INICIAL AND :DT_FINAL)'#13#10'  and M.FILIAL = :FILIAL'
+      'SELECT N.ID, N.tipo_reg, N.tipo_nota, N.numnota, N.serie, N.id_c' +
+      'liente, N.dtemissao,'#13#10'N.dtsaidaentrada, coalesce(COND.TIPO,'#39'X'#39') ' +
+      'TIPO_CONDICAO,'#13#10'coalesce(N.tipo_frete,'#39#39') tipo_frete, '#39'N'#39' TIPO_N' +
+      'S'#13#10#13#10'FROM NOTAFISCAL N'#13#10'LEFT JOIN condpgto COND'#13#10'ON N.id_condpgt' +
+      'o = COND.ID'#13#10'WHERE N.TIPO_REG = '#39'NTE'#39#13#10'and n.dtsaidaentrada betw' +
+      'een :Data1 and :Data2'#13#10'and n.FILIAL = :FILIAL'#13#10#13#10'UNION'#13#10#13#10'SELECT' +
+      ' NS.ID, NS.tipo_doc, NS.tipo_es, NS.numnota, NS.serie, NS.id_cli' +
+      'ente, NS.dtemissao_cad,'#13#10'NS.dtentrada, coalesce(COND.TIPO,'#39'X'#39') T' +
+      'IPO_CONDICAO, '#39#39' AS TIPO_FRETE, '#39'S'#39' TIPO_NS'#13#10'FROM NOTASERVICO NS' +
+      #13#10'LEFT JOIN condpgto COND'#13#10'ON NS.id_condpgto = COND.ID'#13#10'WHERE NS' +
+      '.TIPO_ES = '#39'E'#39#13#10'  and ns.dtentrada between :Data1 and :Data2'#13#10'  ' +
+      'and nS.FILIAL = :FILIAL'#13#10#13#10#13#10
     MaxBlobSize = -1
     Params = <
       item
         DataType = ftDate
-        Name = 'DT_INICIAL'
+        Name = 'Data1'
         ParamType = ptInput
       end
       item
         DataType = ftDate
-        Name = 'DT_FINAL'
+        Name = 'Data2'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftInteger
+        Name = 'FILIAL'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftDate
+        Name = 'Data1'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftDate
+        Name = 'Data2'
         ParamType = ptInput
       end
       item
@@ -837,24 +856,676 @@ object DMIntegracao: TDMIntegracao
         ParamType = ptInput
       end>
     SQLConnection = dmDatabase.scoDados
-    Left = 296
-    Top = 360
+    Left = 208
+    Top = 320
   end
-  object DataSetProvider1: TDataSetProvider
-    DataSet = SQLDataSet1
-    Left = 344
-    Top = 360
+  object dspNota: TDataSetProvider
+    DataSet = sdsNota
+    Left = 256
+    Top = 320
   end
-  object ClientDataSet1: TClientDataSet
+  object cdsNota: TClientDataSet
     Aggregates = <>
     Params = <>
-    ProviderName = 'dspMovimento'
-    Left = 392
-    Top = 360
+    ProviderName = 'dspNota'
+    Left = 304
+    Top = 320
+    object cdsNotaID: TIntegerField
+      FieldName = 'ID'
+      Required = True
+    end
+    object cdsNotaTIPO_REG: TStringField
+      FieldName = 'TIPO_REG'
+      Size = 3
+    end
+    object cdsNotaTIPO_NOTA: TStringField
+      FieldName = 'TIPO_NOTA'
+      FixedChar = True
+      Size = 1
+    end
+    object cdsNotaNUMNOTA: TIntegerField
+      FieldName = 'NUMNOTA'
+    end
+    object cdsNotaSERIE: TStringField
+      FieldName = 'SERIE'
+      Size = 5
+    end
+    object cdsNotaID_CLIENTE: TIntegerField
+      FieldName = 'ID_CLIENTE'
+    end
+    object cdsNotaDTEMISSAO: TDateField
+      FieldName = 'DTEMISSAO'
+    end
+    object cdsNotaDTSAIDAENTRADA: TDateField
+      FieldName = 'DTSAIDAENTRADA'
+    end
+    object cdsNotaTIPO_CONDICAO: TStringField
+      FieldName = 'TIPO_CONDICAO'
+      FixedChar = True
+      Size = 1
+    end
+    object cdsNotaTIPO_FRETE: TStringField
+      FieldName = 'TIPO_FRETE'
+      Size = 1
+    end
+    object cdsNotaTIPO_NS: TStringField
+      FieldName = 'TIPO_NS'
+      Required = True
+      FixedChar = True
+      Size = 1
+    end
   end
-  object DataSource1: TDataSource
-    DataSet = ClientDataSet1
-    Left = 440
-    Top = 360
+  object dsNota: TDataSource
+    DataSet = cdsNota
+    Left = 352
+    Top = 320
+  end
+  object sdsItens: TSQLDataSet
+    NoMetadata = True
+    GetMetadata = False
+    CommandText = 
+      'select aux.*'#13#10'from ('#13#10'SELECT I.ID_CFOP, I.ID_PRODUTO, I.QTD, I.V' +
+      'LR_UNITARIO, I.vlr_total, I.base_ipi,'#13#10'I.base_icms, I.base_icmss' +
+      'ubst, I.vlr_icms, I.vlr_ipi, I.vlr_icmssubst, '#39'N'#39' TIPO_NS,'#13#10'i.id' +
+      ' id_nota, i.perc_icms, i.vlr_icms_uf_dest, i.vlr_icms_uf_remet, ' +
+      'i.vlr_icms_fcp_dest,'#13#10'0 base_inss,'#13#10'0 vlr_inss,'#13#10'0 base_calculo,' +
+      #13#10'0 vlr_iss,'#13#10'0 vlr_iss_retido,'#13#10'0 vlr_ir,'#13#10'0 vlr_pis,'#13#10'0 vlr_co' +
+      'fins,'#13#10'0 vlr_csll,'#13#10'0 retem_inss'#13#10'FROM NOTAFISCAL_ITENS I'#13#10'where' +
+      ' i.id = :ID'#13#10#13#10'UNION'#13#10#13#10'SELECT 0, SI.id_servico_int ID_PRODUTO, ' +
+      'SI.QTD, SI.VLR_UNITARIO, SI.vlr_total, 0,'#13#10'0, 0, 0, 0, 0, '#39'S'#39' TI' +
+      'PO_NS, s.id id_nota, 0 perc_icms, 0 vlr_icms_uf_dest,'#13#10'0 vlr_icm' +
+      's_uf_remet, 0 vlr_icms_fcp_dest,'#13#10'si.base_inss,'#13#10'si.vlr_inss,'#13#10's' +
+      'i.base_calculo,'#13#10'si.vlr_iss,'#13#10'si.vlr_iss_retido,'#13#10'si.vlr_ir,'#13#10'si' +
+      '.vlr_pis,'#13#10'si.vlr_cofins,'#13#10'si.vlr_csll,'#13#10's.retem_inss'#13#10'FROM nota' +
+      'servico S'#13#10'INNER JOIN notaservico_itens SI'#13#10'on s.id = si.id'#13#10'whe' +
+      're SI.id = :ID) aux'#13#10'where aux.tipo_ns = :TIPO_NS'#13#10#13#10
+    MaxBlobSize = -1
+    Params = <
+      item
+        DataType = ftInteger
+        Name = 'ID'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftInteger
+        Name = 'ID'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftString
+        Name = 'TIPO_NS'
+        ParamType = ptInput
+      end>
+    SQLConnection = dmDatabase.scoDados
+    Left = 208
+    Top = 376
+  end
+  object dspItens: TDataSetProvider
+    DataSet = sdsItens
+    Left = 256
+    Top = 376
+  end
+  object cdsItens: TClientDataSet
+    Aggregates = <>
+    IndexFieldNames = 'ID_CFOP'
+    Params = <>
+    ProviderName = 'dspItens'
+    Left = 304
+    Top = 376
+    object cdsItensID_CFOP: TIntegerField
+      FieldName = 'ID_CFOP'
+    end
+    object cdsItensID_PRODUTO: TIntegerField
+      FieldName = 'ID_PRODUTO'
+    end
+    object cdsItensQTD: TFloatField
+      FieldName = 'QTD'
+    end
+    object cdsItensVLR_UNITARIO: TFloatField
+      FieldName = 'VLR_UNITARIO'
+    end
+    object cdsItensVLR_TOTAL: TFloatField
+      FieldName = 'VLR_TOTAL'
+    end
+    object cdsItensBASE_IPI: TFloatField
+      FieldName = 'BASE_IPI'
+    end
+    object cdsItensBASE_ICMS: TFloatField
+      FieldName = 'BASE_ICMS'
+    end
+    object cdsItensBASE_ICMSSUBST: TFloatField
+      FieldName = 'BASE_ICMSSUBST'
+    end
+    object cdsItensVLR_ICMS: TFloatField
+      FieldName = 'VLR_ICMS'
+    end
+    object cdsItensVLR_IPI: TFloatField
+      FieldName = 'VLR_IPI'
+    end
+    object cdsItensVLR_ICMSSUBST: TFloatField
+      FieldName = 'VLR_ICMSSUBST'
+    end
+    object cdsItensTIPO_NS: TStringField
+      FieldName = 'TIPO_NS'
+      Required = True
+      FixedChar = True
+      Size = 1
+    end
+    object cdsItensID_NOTA: TIntegerField
+      FieldName = 'ID_NOTA'
+      Required = True
+    end
+    object cdsItensPERC_ICMS: TFloatField
+      FieldName = 'PERC_ICMS'
+    end
+    object cdsItensVLR_ICMS_UF_DEST: TFloatField
+      FieldName = 'VLR_ICMS_UF_DEST'
+    end
+    object cdsItensVLR_ICMS_UF_REMET: TFloatField
+      FieldName = 'VLR_ICMS_UF_REMET'
+    end
+    object cdsItensVLR_ICMS_FCP_DEST: TFloatField
+      FieldName = 'VLR_ICMS_FCP_DEST'
+    end
+    object cdsItensBASE_INSS: TFloatField
+      FieldName = 'BASE_INSS'
+    end
+    object cdsItensVLR_INSS: TFloatField
+      FieldName = 'VLR_INSS'
+    end
+    object cdsItensBASE_CALCULO: TFloatField
+      FieldName = 'BASE_CALCULO'
+    end
+    object cdsItensVLR_ISS: TFloatField
+      FieldName = 'VLR_ISS'
+    end
+    object cdsItensVLR_ISS_RETIDO: TFloatField
+      FieldName = 'VLR_ISS_RETIDO'
+    end
+    object cdsItensVLR_IR: TFloatField
+      FieldName = 'VLR_IR'
+    end
+    object cdsItensVLR_PIS: TFloatField
+      FieldName = 'VLR_PIS'
+    end
+    object cdsItensVLR_COFINS: TFloatField
+      FieldName = 'VLR_COFINS'
+    end
+    object cdsItensVLR_CSLL: TFloatField
+      FieldName = 'VLR_CSLL'
+    end
+    object cdsItensRETEM_INSS: TStringField
+      FieldName = 'RETEM_INSS'
+      Size = 11
+    end
+  end
+  object dsItens: TDataSource
+    DataSet = cdsItens
+    Left = 352
+    Top = 376
+  end
+  object mCFOP: TClientDataSet
+    Active = True
+    Aggregates = <>
+    Params = <>
+    Left = 472
+    Top = 312
+    Data = {
+      010200009619E0BD0100000018000000170000000000030000000102074E756D
+      4E6F746104000100000000000553657269650100490000000100055749445448
+      0200020003000749445F43464F50040001000000000007436F6443464F500100
+      4900000001000557494454480200020004000949445F506573736F6104000100
+      000000000D434E504A5F454D4954454E54450100490000000100055749445448
+      02000200120009566C725F546F74616C080004000000000007566C725F495049
+      080004000000000008426173655F495049080004000000000007426173655F53
+      5408000400000000000A566C725F49434D535354080004000000000011566C72
+      5F49434D535F446966657269646F080004000000000008426173655F49535308
+      0004000000000007566C725F49535308000400000000000E566C725F4953535F
+      4973656E746F080004000000000006566C725F4952080004000000000007566C
+      725F50697308000400000000000A566C725F436F66696E730800040000000000
+      08566C725F43534C4C08000400000000000B494E53535F52657469646F010049
+      00000001000557494454480200020001000A4953535F52657469646F01004900
+      0000010005574944544802000200010010566C725F49434D535F55465F446573
+      74080004000000000011566C725F49434D535F55465F52656D65740800040000
+      0000000000}
+    object mCFOPNumNota: TIntegerField
+      FieldName = 'NumNota'
+    end
+    object mCFOPSerie: TStringField
+      FieldName = 'Serie'
+      Size = 3
+    end
+    object mCFOPID_CFOP: TIntegerField
+      FieldName = 'ID_CFOP'
+    end
+    object mCFOPCodCFOP: TStringField
+      FieldName = 'CodCFOP'
+      Size = 4
+    end
+    object mCFOPID_Pessoa: TIntegerField
+      FieldName = 'ID_Pessoa'
+    end
+    object mCFOPCNPJ_EMITENTE: TStringField
+      FieldName = 'CNPJ_EMITENTE'
+      Size = 18
+    end
+    object mCFOPVlr_Total: TFloatField
+      FieldName = 'Vlr_Total'
+    end
+    object mCFOPVlr_IPI: TFloatField
+      FieldName = 'Vlr_IPI'
+    end
+    object mCFOPBase_IPI: TFloatField
+      FieldName = 'Base_IPI'
+    end
+    object mCFOPBase_ST: TFloatField
+      FieldName = 'Base_ST'
+    end
+    object mCFOPVlr_ICMSST: TFloatField
+      FieldName = 'Vlr_ICMSST'
+    end
+    object mCFOPVlr_ICMS_Diferido: TFloatField
+      FieldName = 'Vlr_ICMS_Diferido'
+    end
+    object mCFOPBase_ISS: TFloatField
+      FieldName = 'Base_ISS'
+    end
+    object mCFOPVlr_ISS: TFloatField
+      FieldName = 'Vlr_ISS'
+    end
+    object mCFOPVlr_ISS_Isento: TFloatField
+      FieldName = 'Vlr_ISS_Isento'
+    end
+    object mCFOPVlr_IR: TFloatField
+      FieldName = 'Vlr_IR'
+    end
+    object mCFOPVlr_Pis: TFloatField
+      FieldName = 'Vlr_Pis'
+    end
+    object mCFOPVlr_Cofins: TFloatField
+      FieldName = 'Vlr_Cofins'
+    end
+    object mCFOPVlr_CSLL: TFloatField
+      FieldName = 'Vlr_CSLL'
+    end
+    object mCFOPINSS_Retido: TStringField
+      FieldName = 'INSS_Retido'
+      Size = 1
+    end
+    object mCFOPISS_Retido: TStringField
+      FieldName = 'ISS_Retido'
+      Size = 1
+    end
+    object mCFOPVlr_ICMS_UF_Dest: TFloatField
+      FieldName = 'Vlr_ICMS_UF_Dest'
+    end
+    object mCFOPVlr_ICMS_UF_Remet: TFloatField
+      FieldName = 'Vlr_ICMS_UF_Remet'
+    end
+  end
+  object mProd: TClientDataSet
+    Active = True
+    Aggregates = <>
+    FieldDefs = <
+      item
+        Name = 'ID_CFOP'
+        DataType = ftInteger
+      end
+      item
+        Name = 'Cod_Produto'
+        DataType = ftString
+        Size = 10
+      end
+      item
+        Name = 'Qtd'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Unitario'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Total'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Desconto'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Base_ICMS'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Perc_ICMS'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_IPI'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Base_ICMSST'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Perc_IPI'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Perc_Red_ICMS'
+        DataType = ftFloat
+      end
+      item
+        Name = 'CODCST_ICMS'
+        DataType = ftString
+        Size = 3
+      end
+      item
+        Name = 'Identificacao'
+        DataType = ftString
+        Size = 15
+      end
+      item
+        Name = 'CODCST_IPI'
+        DataType = ftString
+        Size = 3
+      end
+      item
+        Name = 'Base_IPI'
+        DataType = ftFloat
+      end
+      item
+        Name = 'CODCST_PIS'
+        DataType = ftString
+        Size = 2
+      end
+      item
+        Name = 'Base_PIS'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Perc_Pis'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Qtd_Base_Pis'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Pis'
+        DataType = ftFloat
+      end
+      item
+        Name = 'CODCST_Cofins'
+        DataType = ftString
+        Size = 2
+      end
+      item
+        Name = 'Base_Cofins'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Perc_Cofins'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Qtd_Base_Cofins'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Cofins'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Icms_ST'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Perc_Icms_ST'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Icms'
+        DataType = ftFloat
+      end
+      item
+        Name = 'CodCFOP'
+        DataType = ftString
+        Size = 4
+      end
+      item
+        Name = 'Unidade'
+        DataType = ftString
+        Size = 6
+      end
+      item
+        Name = 'Base_Icms_Diferencial'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Icms_Origem'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Icms_Interno'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Icms_Recolher'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Base_Icms_Ant'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Icms_Ori_Ant'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Simples'
+        DataType = ftString
+        Size = 1
+      end
+      item
+        Name = 'Proprio_Terceiro'
+        DataType = ftString
+        Size = 1
+      end
+      item
+        Name = 'Vlr_Frete'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Seguro'
+        DataType = ftFloat
+      end
+      item
+        Name = 'Vlr_Despesas'
+        DataType = ftFloat
+      end>
+    IndexDefs = <>
+    IndexFieldNames = 'ID_CFOP'
+    MasterFields = 'ID_CFOP'
+    MasterSource = dsmCFOP
+    PacketRecords = 0
+    Params = <>
+    StoreDefs = True
+    Left = 472
+    Top = 368
+    Data = {
+      D30300009619E0BD01000000180000002A000000000003000000D3030749445F
+      43464F5004000100000000000B436F645F50726F6475746F0100490000000100
+      055749445448020002000A000351746408000400000000000C566C725F556E69
+      746172696F080004000000000009566C725F546F74616C08000400000000000C
+      566C725F446573636F6E746F080004000000000009426173655F49434D530800
+      04000000000009506572635F49434D53080004000000000007566C725F495049
+      08000400000000000B426173655F49434D535354080004000000000008506572
+      635F49504908000400000000000D506572635F5265645F49434D530800040000
+      0000000B434F444353545F49434D530100490000000100055749445448020002
+      0003000D4964656E74696669636163616F010049000000010005574944544802
+      0002000F000A434F444353545F49504901004900000001000557494454480200
+      0200030008426173655F49504908000400000000000A434F444353545F504953
+      010049000000010005574944544802000200020008426173655F504953080004
+      000000000008506572635F50697308000400000000000C5174645F426173655F
+      506973080004000000000007566C725F50697308000400000000000D434F4443
+      53545F436F66696E7301004900000001000557494454480200020002000B4261
+      73655F436F66696E7308000400000000000B506572635F436F66696E73080004
+      00000000000F5174645F426173655F436F66696E7308000400000000000A566C
+      725F436F66696E7308000400000000000B566C725F49636D735F535408000400
+      000000000C506572635F49636D735F5354080004000000000008566C725F4963
+      6D73080004000000000007436F6443464F500100490000000100055749445448
+      02000200040007556E6964616465010049000000010005574944544802000200
+      060015426173655F49636D735F4469666572656E6369616C0800040000000000
+      0F566C725F49636D735F4F726967656D080004000000000010566C725F49636D
+      735F496E7465726E6F080004000000000011566C725F49636D735F5265636F6C
+      68657208000400000000000D426173655F49636D735F416E7408000400000000
+      0010566C725F49636D735F4F72695F416E7408000400000000000753696D706C
+      657301004900000001000557494454480200020001001050726F7072696F5F54
+      6572636569726F010049000000010005574944544802000200010009566C725F
+      467265746508000400000000000A566C725F53656775726F0800040000000000
+      0C566C725F446573706573617308000400000000000000}
+    object mProdID_CFOP: TIntegerField
+      FieldName = 'ID_CFOP'
+    end
+    object mProdCod_Produto: TStringField
+      FieldName = 'Cod_Produto'
+      Size = 10
+    end
+    object mProdQtd: TFloatField
+      FieldName = 'Qtd'
+    end
+    object mProdVlr_Unitario: TFloatField
+      FieldName = 'Vlr_Unitario'
+    end
+    object mProdVlr_Total: TFloatField
+      FieldName = 'Vlr_Total'
+    end
+    object mProdVlr_Desconto: TFloatField
+      FieldName = 'Vlr_Desconto'
+    end
+    object mProdBase_ICMS: TFloatField
+      FieldName = 'Base_ICMS'
+    end
+    object mProdPerc_ICMS: TFloatField
+      FieldName = 'Perc_ICMS'
+    end
+    object mProdVlr_IPI: TFloatField
+      FieldName = 'Vlr_IPI'
+    end
+    object mProdBase_ICMSST: TFloatField
+      FieldName = 'Base_ICMSST'
+    end
+    object mProdPerc_IPI: TFloatField
+      FieldName = 'Perc_IPI'
+    end
+    object mProdPerc_Red_ICMS: TFloatField
+      FieldName = 'Perc_Red_ICMS'
+    end
+    object mProdCODCST_ICMS: TStringField
+      FieldName = 'CODCST_ICMS'
+      Size = 3
+    end
+    object mProdIdentificacao: TStringField
+      FieldName = 'Identificacao'
+      Size = 15
+    end
+    object mProdCODCST_IPI: TStringField
+      FieldName = 'CODCST_IPI'
+      Size = 3
+    end
+    object mProdBase_IPI: TFloatField
+      FieldName = 'Base_IPI'
+    end
+    object mProdCODCST_PIS: TStringField
+      FieldName = 'CODCST_PIS'
+      Size = 2
+    end
+    object mProdBase_PIS: TFloatField
+      FieldName = 'Base_PIS'
+    end
+    object mProdPerc_Pis: TFloatField
+      FieldName = 'Perc_Pis'
+    end
+    object mProdQtd_Base_Pis: TFloatField
+      FieldName = 'Qtd_Base_Pis'
+    end
+    object mProdVlr_Pis: TFloatField
+      FieldName = 'Vlr_Pis'
+    end
+    object mProdCODCST_Cofins: TStringField
+      FieldName = 'CODCST_Cofins'
+      Size = 2
+    end
+    object mProdBase_Cofins: TFloatField
+      FieldName = 'Base_Cofins'
+    end
+    object mProdPerc_Cofins: TFloatField
+      FieldName = 'Perc_Cofins'
+    end
+    object mProdQtd_Base_Cofins: TFloatField
+      FieldName = 'Qtd_Base_Cofins'
+    end
+    object mProdVlr_Cofins: TFloatField
+      FieldName = 'Vlr_Cofins'
+    end
+    object mProdVlr_Icms_ST: TFloatField
+      FieldName = 'Vlr_Icms_ST'
+    end
+    object mProdPerc_Icms_ST: TFloatField
+      FieldName = 'Perc_Icms_ST'
+    end
+    object mProdVlr_Icms: TFloatField
+      FieldName = 'Vlr_Icms'
+    end
+    object mProdCodCFOP: TStringField
+      FieldName = 'CodCFOP'
+      Size = 4
+    end
+    object mProdUnidade: TStringField
+      FieldName = 'Unidade'
+      Size = 6
+    end
+    object mProdBase_Icms_Diferencial: TFloatField
+      FieldName = 'Base_Icms_Diferencial'
+    end
+    object mProdVlr_Icms_Origem: TFloatField
+      FieldName = 'Vlr_Icms_Origem'
+    end
+    object mProdVlr_Icms_Interno: TFloatField
+      FieldName = 'Vlr_Icms_Interno'
+    end
+    object mProdVlr_Icms_Recolher: TFloatField
+      FieldName = 'Vlr_Icms_Recolher'
+    end
+    object mProdBase_Icms_Ant: TFloatField
+      FieldName = 'Base_Icms_Ant'
+    end
+    object mProdVlr_Icms_Ori_Ant: TFloatField
+      FieldName = 'Vlr_Icms_Ori_Ant'
+    end
+    object mProdSimples: TStringField
+      FieldName = 'Simples'
+      Size = 1
+    end
+    object mProdProprio_Terceiro: TStringField
+      FieldName = 'Proprio_Terceiro'
+      Size = 1
+    end
+    object mProdVlr_Frete: TFloatField
+      FieldName = 'Vlr_Frete'
+    end
+    object mProdVlr_Seguro: TFloatField
+      FieldName = 'Vlr_Seguro'
+    end
+    object mProdVlr_Despesas: TFloatField
+      FieldName = 'Vlr_Despesas'
+    end
+  end
+  object dsmCFOP: TDataSource
+    DataSet = mCFOP
+    Left = 496
+    Top = 312
   end
 end

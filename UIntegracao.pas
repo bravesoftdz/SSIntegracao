@@ -53,7 +53,7 @@ type
     RxDBLookupCombo2: TRxDBLookupCombo;
     NxDatePicker4: TNxDatePicker;
     NxDatePicker5: TNxDatePicker;
-    NxButton1: TNxButton;
+    btnGerarNotaEnt: TNxButton;
     DirectoryEdit2: TDirectoryEdit;
     NxButton2: TNxButton;
     NxDatePicker6: TNxDatePicker;
@@ -71,6 +71,7 @@ type
     procedure btnOperacoesClick(Sender: TObject);
     procedure RxDBLookupCombo1Exit(Sender: TObject);
     procedure btnPlanoContasClick(Sender: TObject);
+    procedure btnGerarNotaEntClick(Sender: TObject);
   private
     { Private declarations }
     fDMIntegracao: TDMIntegracao;
@@ -91,10 +92,16 @@ type
     procedure prc_Grava_Lancamentos;
     procedure prc_Gravar_Historico_H;
 
+    procedure prc_Le_cdsNota;
+
     function Monta_Numero(Campo: String; Tamanho: Integer): String;
 
     function fnc_Monta_Hist : String;
     function fnc_Monta_Vlr : Real;
+
+    procedure prc_Header;
+    procedure prc_Emitente_Destinatario;
+    procedure prc_Exclui_mCFOP;
 
   public
     { Public declarations }
@@ -743,6 +750,92 @@ begin
   frmConvPlanoContas := TfrmConvPlanoContas.Create(self);
   frmConvPlanoContas.ShowModal;
   FreeAndNil(frmConvPlanoContas);
+end;
+
+procedure TfrmIntegracao.btnGerarNotaEntClick(Sender: TObject);
+begin
+  if trim(RxDBLookupCombo2.Text) = '' then
+  begin
+    MessageDlg('*** Filial não informada!', mtInformation, [mbOk], 0);
+    exit;
+  end;
+  if (NxDatePicker4.Date <= 10) or (NxDatePicker4.Date > NxDatePicker5.Date) then
+  begin
+    MessageDlg('*** Data inicial inválida!', mtInformation, [mbOk], 0);
+    exit;
+  end;
+  if (NxDatePicker5.Date <= 10) then
+  begin
+    MessageDlg('*** Data Final inválida!', mtInformation, [mbOk], 0);
+    exit;
+  end;
+  fDMIntegracao.cdsNota.Close;
+  fDMIntegracao.sdsNota.ParamByName('FILIAL').AsInteger := RxDBLookupCombo2.KeyValue;
+  fDMIntegracao.sdsNota.ParamByName('DATA1').AsDate     := NxDatePicker4.Date;
+  fDMIntegracao.sdsNota.ParamByName('DATA2').AsDate     := NxDatePicker5.Date;
+  fDMIntegracao.cdsNota.Open;
+  prc_Le_cdsNota;
+
+end;
+
+procedure TfrmIntegracao.prc_Le_cdsNota;
+begin
+  prc_Header;
+  fDMIntegracao.cdsNota.First;
+  while not fDMIntegracao.cdsNota.Eof do
+  begin
+    prc_Emitente_Destinatario;
+
+    fDMIntegracao.cdsItens.Close;
+    fDMIntegracao.sdsItens.ParamByName('ID').AsInteger     := fDMIntegracao.cdsNotaID.AsInteger;
+    fDMIntegracao.sdsItens.ParamByName('TIPO_NS').AsString := fDMIntegracao.cdsNotaTIPO_NS.AsString;
+    fDMIntegracao.cdsItens.Open;
+    prc_Exclui_mCFOP;
+
+    fDMIntegracao.cdsItens.First;
+    while not fDMIntegracao.cdsItens.Eof do
+    begin
+      prc_Grava_mCFOP;
+      prc_Grava_mProd;
+      fDMIntegracao.cdsItens.Next;
+    end;
+
+    fDMIntegracao.mCFOP.First;
+    while not fDMIntegracao.mCFOP.Eof do
+    begin
+      prc_NotasFiscais;
+
+
+      fDMIntegracao.mCFOP.Next;
+    end;
+
+    
+
+    fDMIntegracao.cdsNota.Next;
+  end;
+
+end;
+
+procedure TfrmIntegracao.prc_Header;
+begin
+
+end;
+
+procedure TfrmIntegracao.prc_Emitente_Destinatario;
+begin
+
+end;
+
+procedure TfrmIntegracao.prc_Exclui_mCFOP;
+begin
+  fDMIntegracao.mCFOP.First;
+  while not fDMIntegracao.mCFOP.Eof do
+  begin
+    fDMIntegracao.mProd.First;
+    while not fDMIntegracao.mProd.Eof do
+      fDMIntegracao.mProd.Delete;
+    fDMIntegracao.mCFOP.Delete;
+  end;
 end;
 
 end.
