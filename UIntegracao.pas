@@ -51,17 +51,23 @@ type
     Label15: TLabel;
     Label16: TLabel;
     RxDBLookupCombo2: TRxDBLookupCombo;
-    NxDatePicker4: TNxDatePicker;
-    NxDatePicker5: TNxDatePicker;
     btnGerarNotaEnt: TNxButton;
-    DirectoryEdit2: TDirectoryEdit;
+    edtDiretorioArquivo: TDirectoryEdit;
     NxButton2: TNxButton;
-    NxDatePicker6: TNxDatePicker;
     RzGroupBox2: TRzGroupBox;
     Label17: TLabel;
     CurrencyEdit2: TCurrencyEdit;
     Label20: TLabel;
     ComboBox2: TComboBox;
+    Label18: TLabel;
+    Edit3: TEdit;
+    dateInicial: TDateEdit;
+    dateFinal: TDateEdit;
+    dateGeracao: TDateEdit;
+    Panel4: TPanel;
+    Label19: TLabel;
+    RzProgressBar3: TRzProgressBar;
+    Label22: TLabel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -81,12 +87,17 @@ type
     vHistorico : String;
     vCod_Debito, vCod_Credito : Integer;
     vVlr_Lacto : Real;
-    
+    Txt  : TextFile;
+    vRegistro : String;
+    vArquivo : String;
+    vVlrContabil : Real;
+
     procedure prc_Consultar_Titulos_Pagos;
     procedure prc_Gravar_mAuxiliar(Tipo_Lanc : String); //L=Lancamento  J=Juros
     procedure prc_Gravar_mAuxiliar_Novo(Tipo_Lanc : String); //L=Lancamento  J=Juros
     procedure prc_gravar_mErro(Erro : String);
     procedure prc_Le_Contabil_Ope_Lacto(Tipo_ES : String);
+    procedure prc_Montar_DadosComplementares;
 
     procedure prc_Grava_Lote;
     procedure prc_Grava_Lancamentos;
@@ -94,14 +105,17 @@ type
 
     procedure prc_Le_cdsNota;
 
-    function Monta_Numero(Campo: String; Tamanho: Integer): String;
-
     function fnc_Monta_Hist : String;
     function fnc_Monta_Vlr : Real;
 
     procedure prc_Header;
     procedure prc_Emitente_Destinatario;
+    procedure prc_Nota_Fiscal;
+    procedure prc_Itens_Nota_Fiscal;
     procedure prc_Exclui_mCFOP;
+    procedure prc_Montar_CliFor;
+    procedure prc_Montar_Trailler;
+    function Monta_Numero(Campo: String; Tamanho: Integer): String;
 
   public
     { Public declarations }
@@ -126,21 +140,13 @@ end;
 procedure TfrmIntegracao.FormShow(Sender: TObject);
 begin
   fDMIntegracao := TDMIntegracao.Create(Self);
-  
   oDBUtils.SetDataSourceProperties(Self, fDMIntegracao);
-
   if fDMIntegracao.cdsFilial.RecordCount = 1 then
     RxDBLookupCombo1.KeyValue := fDMIntegracao.cdsFilialID.AsInteger;
-
-
   //CurrencyEdit1.AsInteger := fDMIntegracao.cdsFilialNUM_SEQ_LOTE_INTEGRACAO.AsInteger;
-
-  NxDatePicker1.Clear;
-  NxDatePicker2.Clear;
-  NxDatePicker3.Clear;
-
+  dateGeracao.Date := Date;
   DirectoryEdit1.Text := fDMIntegracao.qParametros_GeralEND_ARQ_INT_CONTABIL.AsString;
-  DirectoryEdit2.Text := fDMIntegracao.qParametros_GeralEND_ARQ_INT_CONTABIL.AsString;
+  edtDiretorioArquivo.Text := fDMIntegracao.qParametros_GeralEND_ARQ_INT_CONTABIL.AsString;
 end;
 
 procedure TfrmIntegracao.FormDestroy(Sender: TObject);
@@ -754,25 +760,26 @@ end;
 
 procedure TfrmIntegracao.btnGerarNotaEntClick(Sender: TObject);
 begin
+  Label22.Visible := False;
   if trim(RxDBLookupCombo2.Text) = '' then
   begin
     MessageDlg('*** Filial não informada!', mtInformation, [mbOk], 0);
     exit;
   end;
-  if (NxDatePicker4.Date <= 10) or (NxDatePicker4.Date > NxDatePicker5.Date) then
+  if (dateInicial.Date <= 10) or (dateInicial.Date > dateFinal.Date) then
   begin
     MessageDlg('*** Data inicial inválida!', mtInformation, [mbOk], 0);
     exit;
   end;
-  if (NxDatePicker5.Date <= 10) then
+  if (dateFinal.Date <= 10) then
   begin
     MessageDlg('*** Data Final inválida!', mtInformation, [mbOk], 0);
     exit;
   end;
   fDMIntegracao.cdsNota.Close;
   fDMIntegracao.sdsNota.ParamByName('FILIAL').AsInteger := RxDBLookupCombo2.KeyValue;
-  fDMIntegracao.sdsNota.ParamByName('DATA1').AsDate     := NxDatePicker4.Date;
-  fDMIntegracao.sdsNota.ParamByName('DATA2').AsDate     := NxDatePicker5.Date;
+  fDMIntegracao.sdsNota.ParamByName('DATA1').AsDate     := dateInicial.Date;
+  fDMIntegracao.sdsNota.ParamByName('DATA2').AsDate     := dateFinal.Date;
   fDMIntegracao.cdsNota.Open;
   prc_Le_cdsNota;
 
@@ -780,12 +787,25 @@ end;
 
 procedure TfrmIntegracao.prc_Le_cdsNota;
 begin
+  vContador    := 0;
+  vVlrContabil := 0;
+  vRegistro    := '';
+  vArquivo  := edtDiretorioArquivo.Text;
+  if Copy(vArquivo,(Length(vArquivo)),1) <> '\' then
+    vArquivo := vArquivo + '\';
+  AssignFile(Txt,vArquivo + 'NOTAENT.TXT');
+  ReWrite(Txt);
   prc_Header;
+  RzProgressBar3.TotalParts    := 0;
+  RzProgressBar3.PartsComplete := 0;
+  RzProgressBar3.TotalParts    := fDMIntegracao.cdsNota.RecordCount;
+
   fDMIntegracao.cdsNota.First;
   while not fDMIntegracao.cdsNota.Eof do
   begin
+    RzProgressBar3.PartsComplete := RzProgressBar3.PartsComplete + 1;
     prc_Emitente_Destinatario;
-
+    prc_Nota_Fiscal;
     fDMIntegracao.cdsItens.Close;
     fDMIntegracao.sdsItens.ParamByName('ID').AsInteger     := fDMIntegracao.cdsNotaID.AsInteger;
     fDMIntegracao.sdsItens.ParamByName('TIPO_NS').AsString := fDMIntegracao.cdsNotaTIPO_NS.AsString;
@@ -795,35 +815,91 @@ begin
     fDMIntegracao.cdsItens.First;
     while not fDMIntegracao.cdsItens.Eof do
     begin
-      prc_Grava_mCFOP;
-      prc_Grava_mProd;
+//      prc_Grava_mCFOP;
+//      prc_Grava_mProd;
+        prc_Itens_Nota_Fiscal;
       fDMIntegracao.cdsItens.Next;
     end;
-
+    prc_Montar_DadosComplementares;
     fDMIntegracao.mCFOP.First;
     while not fDMIntegracao.mCFOP.Eof do
     begin
-      prc_NotasFiscais;
+//      prc_NotasFiscais;
 
 
       fDMIntegracao.mCFOP.Next;
     end;
-
-    
-
     fDMIntegracao.cdsNota.Next;
+    Label22.Font.Color := clBlue;
+    Label22.Caption    := 'Arquivo gerado com sucesso';
+    Label22.Visible    := True;
   end;
 
 end;
 
 procedure TfrmIntegracao.prc_Header;
+var
+  Texto1  : String;
+  ano,mes,dia: Word;
 begin
-
+  Texto1 := '0';                                                                //Tipo Registro   Tamanho 1 - 1 a 1
+  DecodeDate(Date,ano,mes,dia);
+  Texto1 := Texto1 + Monta_Numero(IntToStr(Dia),2);
+  Texto1 := Texto1 + Monta_Numero(IntToStr(Mes),2);
+  Texto1 := Texto1 + Monta_Numero(IntToStr(Ano),4);                             //Data de Geração   Tamanho 8 - 2 a 9
+  Texto1 := Texto1 + fDMIntegracao.cdsFilialCNPJ_CPF.AsString;                  //CNPJ da empresa   Tamanho 18 - 10 a 27
+  Texto1 := Texto1 + IntToStr(ComboBox2.ItemIndex);                             //Opção Bases    Tamanho 1 - 28 a 28
+  Texto1 := Texto1 + Formatar_Campo('',3);                                      //Origem     Tamanho 3 - 29 a 31
+  Texto1 := Texto1 + '1';                                                       //Opção Retenção Tamanho 1 - 28 a 28
+  Texto1 := Texto1 + Formatar_Campo('',443);                                    //Brancos Tamanho 443 - 33 a 474
+  Texto1 := Texto1 + Formatar_Campo('',20);                                     //Uso  Tamanho 20 - 475 a 494
+  vContador := vContador + 1;
+  Texto1    := Texto1 + Monta_Numero(IntToStr(vContador),6);                    //Sequência   Tamanho 6 - 495 a 500
+  Writeln(txt,texto1);
 end;
 
 procedure TfrmIntegracao.prc_Emitente_Destinatario;
+var
+  texto1, texto2 : String;
+  vExiste : Boolean;
 begin
-
+  fDMIntegracao.prc_Localiza_Fornecedor(fDMIntegracao.cdsNotaID_CLIENTE.AsInteger);
+  if fDMIntegracao.qFornecedor.IsEmpty then
+  begin
+    ShowMessage('Fornecedor inexistente na nf nº: ' + fDMIntegracao.cdsNotaNUMNOTA.AsString);
+    Exit;
+  end;
+  Texto1 := '4';                                                                            //Tipo Registro   Tamanho 1 - 1 a 1
+  texto2 := fDMIntegracao.qFornecedorCNPJ_CPF.AsString;                                     //CNPJ do Cliente   Tamanho 18 - 2 a 19
+  texto1 := texto1 + Formatar_Campo(texto2,18);
+  texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorNOME.AsString,1,40),40); //Razão Social   Tamanho 40 - 20 a 59
+  texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorFANTASIA.AsString,1,20),20);      //Fantasia   Tamanho 20 - 60 a 79
+  texto1 := texto1 + Formatar_Campo(fDMIntegracao.qFornecedorUF.AsString,2);                        //Estado   Tamanho 2 - 80 a 81
+  texto1 := texto1 + Formatar_Campo(fDMIntegracao.qFornecedorINSCR_EST.AsString,20);                //Inscrição   Tamanho 20 - 82 a 101
+  texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorENDERECO.AsString,1,40),40);      //Endereço   Tamanho 40 - 102 a 141
+  texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorBAIRRO.AsString,1,20),20);        //Bairro   Tamanho 20 - 142 a 161
+  texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorCIDADE.AsString,1,20),20);        //Cidade   Tamanho 20 - 162 a 181
+  texto1 := texto1 + Monta_Numero(fDMIntegracao.qFornecedorCEP.AsString,8);                         //CEP   Tamanho 8 - 182 a 189
+  texto1 := texto1 + Monta_Numero(copy(SQLLocate('CIDADE','ID','CODMUNICIPIO',fDMIntegracao.qFornecedorID_CIDADE.AsString),1,4),4);      //Código Municipio SIAFI   Tamanho 4 - 190 a 193
+  texto1 := texto1 + Monta_Numero(fDMIntegracao.qFornecedorDDDFONE1.AsString,3);                         //DDD    Tamanho 3 - 194 a 196
+  texto1 := texto1 + Monta_Numero(copy(trim(fDMIntegracao.qFornecedorTELEFONE1.AsString),1,10),10);      //Fone   Tamanho 10 - 197 a 206
+  texto1 := texto1 + Monta_Numero('',6);                                                    //Conta Cliente   Tamanho 6 - 207 a 212
+  texto1 := texto1 + Monta_Numero('',3);                                                    //Histórico Cliente   Tamanho 3 - 213 a 215
+  texto1 := texto1 + Monta_Numero('',6);                                                    //Conta Fornecedor   Tamanho 6 - 216 a 221
+  texto1 := texto1 + Monta_Numero('',3);                                                    //Histórico Cliente   Tamanho 3 - 222 a 224
+  texto1 := texto1 + Formatar_Campo('N',1);                                                 //Produto rural    Tamanho 1 - 225 a 225
+  texto1 := texto1 + Formatar_Campo(SQLLocate('PAIS','ID','NOME',fDMIntegracao.qFornecedorID_PAIS.AsString) ,18);   //Identificação Exterior    Tamanho 18 - 226 a 243
+  texto1 := texto1 + Monta_Numero(copy(fDMIntegracao.qFornecedorNUM_END.AsString,1,5),5);        //Número do endereço    Tamanho 5 - 244 a 248
+  texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorCOMPLEMENTO_END.AsString,1,20),20);   //Complemento    Tamanho 20 - 249 a 268
+  texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorINSC_SUFRAMA.AsString,1,9),9);         //Suframa  Tamanho 9 - 269 a 277
+  texto1 := texto1 + Monta_Numero(SQLLocate('PAIS','ID','CODPAIS',fDMIntegracao.qFornecedorID_PAIS.AsString),5);                                                //Código do Pais  Tamanho 5 - 278 a 282
+  texto1 := texto1 + Monta_Numero('',1);                                                    //Natureza juridica   Tamanho 1 - 283 a 283
+  texto1 := texto1 + Monta_Numero(SQLLocate('CIDADE','ID','CODMUNICIPIO',fDMIntegracao.qFornecedorID_CIDADE.AsString),7);            //Municipio IBGE   Tamanho 7 - 284 a 290
+  texto1 := texto1 + Formatar_Campo('',199);                                                 //Brancos   Tamanho 199 - 291 a 489
+  texto1 := texto1 + Formatar_Campo('',5);                                                   //Uso da EBS   Tamanho 5 - 490 a 494
+  vContador := vContador + 1;                                                                //Número do Registro   Tamanho 6 - 495 a 500
+  Texto1    := Texto1 + Monta_Numero(IntToStr(vContador),6);
+  Writeln(txt,texto1);
 end;
 
 procedure TfrmIntegracao.prc_Exclui_mCFOP;
@@ -836,6 +912,332 @@ begin
       fDMIntegracao.mProd.Delete;
     fDMIntegracao.mCFOP.Delete;
   end;
+end;
+
+procedure TfrmIntegracao.prc_Montar_CliFor;
+var
+  texto1, texto2 : String;
+  i : Integer;
+begin
+//  texto1 := Formatar_Campo(fDMFolha.mClienteCNPJ_CPF.AsString,0);                     //CNPJ/CPF   Tamanho 18 - 1 a 18
+//  for i := 1 to 18 - Length(texto1) do
+//    texto1 := ' ' + texto1;
+//  texto1 := Texto1 + Formatar_Campo(fDMFolha.mClienteRazao.AsString,40);               //Razão   Tamanho 40 - 19 a 58
+//  texto1 := Texto1 + Formatar_Campo(fDMFolha.mClienteFantasia.AsString,20);            //Fantasia   Tamanho 20 - 59 a 78
+//  texto1 := Texto1 + Formatar_Campo(fDMFolha.mClienteUF.AsString,2);                   //Estado   Tamanho 2 - 79 a 80
+//  texto1 := Texto1 + Formatar_Campo(fDMFolha.mClienteInscEstadual.AsString,20);        //Inscrição Estadual   Tamanho 20 - 81 a 100
+//  texto1 := Texto1 + Formatar_Campo(fDMFolha.mClienteEndereco.AsString,40);            //Endereço   Tamanho 40 - 101 a 140
+//  texto1 := Texto1 + Formatar_Campo(fDMFolha.mClienteBairro.AsString,20);              //Bairro   Tamanho 20 - 141 a 160
+//  texto1 := Texto1 + Formatar_Campo(fDMFolha.mClienteCidade.AsString,20);              //Cidade   Tamanho 20 - 161 a 180
+//  texto1 := Texto1 + Monta_Numero(fDMFolha.mClienteCep.AsString,8);                    //Cep   Tamanho 8 - 181 a 188
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteCodMunicipio.AsString),4);     //Municipio   Tamanho 4 - 189 a 192
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteDDD.AsString),3);              //DDD   Tamanho 3 - 193 a 195
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteFone.AsString),10);            //Fone   Tamanho 10 - 196 a 205
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteContaCliente.AsString),6);     //Conta Cliente   Tamanho 6 - 206 a 211
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteHistoricoCliente.AsString),3); //Historico Cliente   Tamanho 3 - 212 a 214
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteContaFornecedor.AsString),6);  //Conta Fornecedor   Tamanho 6 - 215 a 220
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteHistoricoFornecedor.AsString),3); //Historico Fornecedor   Tamanho 3 - 221 a 223
+//  texto1 := Texto1 + Formatar_Campo(fDMFolha.mClienteProdutor.AsString,1);             //Produtor   Tamanho 1 - 224 a 224
+//  if fDMFolha.mClienteUF.AsString = 'EX' then
+//    texto1 := Texto1 + Formatar_Campo(fDMFolha.mClientePais.AsString,18)
+//  else
+//    texto1 := Texto1 + Formatar_Campo('',18);                                          //Identificação Exterior   Tamanho 1 - 225 a 242
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteNumero_End.AsString),5);       //Número do endereço   Tamanho 5 - 243 a 247
+//  texto1 := Texto1 + Formatar_Campo(fDMFolha.mClienteComplemento.AsString,20);         //Complemento   Tamanho 20 - 248 a 267
+//  texto1 := Texto1 + Formatar_Campo(fDMFolha.mClienteSuframa.AsString,9);              //Suframa   Tamanho 9 - 268 a 276
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteCodPais.AsString),5);          //Código do Pais   Tamanho 5 - 277 a 281
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteNaturezaJuridica.AsString),1); //natureza Juridica   Tamanho 1 - 282 a 282
+//  texto1 := Texto1 + Monta_Numero(trim(fDMFolha.mClienteCodMunicipioIBGE.AsString),7); //Código do Município IBGE   Tamanho 7 - 283 a 289
+//  texto1 := Texto1 + Formatar_Campo('',5);                                             //Uso EBS   Tamanho 5 - 290 a 294
+//  vContador := vContador + 1;
+//  Texto1    := Texto1 + Monta_Numero(IntToStr(vContador),6);                           //Contador do registro - 295
+//  Writeln(txt,texto1);
+end;
+
+procedure TfrmIntegracao.prc_Montar_Trailler;
+var
+  Texto1 : String;
+begin
+  Texto1 := '3';                                                                 //Tipo Registro   Tamanho 1 - 1 a 1
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',vVlrContabil),12);          //Valor contábil   Tamanho 12 - 2 a 13
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                     //Base Pis   Tamanho 12 - 14 a 25
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                     //Base Cofins  Tamanho 12 - 26 a 37
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                     //Base CSLL  Tamanho 12 - 38 a 49
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                     //Base IRPJ  Tamanho 12 - 50 a 61
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Base ICMS A  Tamanho 12 - 62 a 73
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Valor ICMS A  Tamanho 12 - 74 a 85
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Base ICMS B  Tamanho 12 - 86 a 97
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Valor ICMS B  Tamanho 12 - 98 a 109
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Base ICMS C  Tamanho 12 - 110 a 121
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Valor ICMS C  Tamanho 12 - 122 a 133
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Base ICMS D  Tamanho 12 - 134 a 145
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Valor ICMS D  Tamanho 12 - 146 a 157
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Isentas ICMS Tamanho 12 - 158 a 169
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Outras ICMS  Tamanho 12 - 170 a 181
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Base IPI  Tamanho 12 - 182 a 193
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Valor IPI  Tamanho 12 - 194 a 205
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Isentas IPI  Tamanho 12 - 206 a 217
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Outras IPI  Tamanho 12 - 218 a 229
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Mercadorias ST  Tamanho 12 - 230 a 241
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Base ST  Tamanho 12 - 242 a 253
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //ICMS ST  Tamanho 12 - 254 a 265
+  Texto1 := texto1 + Monta_Numero('0',12);                                       //Diferidas  Tamanho 12 - 266 a 277
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                     //Base ISS  Tamanho 12 - 278 a 289
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                     //Valor ISS  Tamanho 12 - 290 a 301
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                     //Isentas ISS  Tamanho 12 - 302 a 313
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                     //IRRF ISS  Tamanho 12 - 314 a 325
+  Texto1 := texto1 + Formatar_Campo('',169);                                     //Brancos  Tamanho 169 - 326 a 494
+  vContador := vContador + 1;
+  Texto1    := Texto1 + Monta_Numero(IntToStr(vContador),6);                     //Sequência   Tamanho 6 - 495 a 500
+  Writeln(txt,texto1);
+end;
+
+procedure TfrmIntegracao.prc_Nota_Fiscal;
+var
+  texto1, texto2 : String;
+begin
+  Texto1 := '1';                                                                         //Tipo Registro   Tamanho 1 - 1 a 1
+  Texto1 := Texto1 + Monta_Numero(DateToStr(fDMIntegracao.cdsNotaDTSAIDAENTRADA.AsDateTime),8);  //Data Lançamento   Tamanho 8 - 2 a 9
+  Texto1 := Texto1 + Monta_Numero(fDMIntegracao.cdsNotaNUMNOTA.AsString,6);              //Número Inicial   Tamanho 6 - 10 a 15
+  Texto1 := Texto1 + Monta_Numero(fDMIntegracao.cdsNotaDTSAIDAENTRADA.AsString,8);       //Data de Emissão   Tamanho 8 - 16 a 23
+//  Texto1 := Texto1 + Formatar_Campo('',3);                                             //Brancos   Tamanho 3 - 30 a 32
+  Texto1 := Texto1 + Monta_Numero('55',2);                                               //Modelo   Tamanho 2 - 24 a 25
+  Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsNotaSERIE.AsString,3);              //Série   Tamanho 3 - 26 a 28
+  Texto1 := Texto1 + Formatar_Campo('',3);                                               //Sub-Série   Tamanho 3 - 29 a 31
+  Texto1 := Texto1 + Monta_Numero(Edit3.Text,4);                                         //Natureza Operação (CFOP)   Tamanho 4 - 32 a 35
+  Texto1 := Texto1 + Monta_Numero('',2);                                                 //Variação Natureza Operação (CFOP)   Tamanho 2 - 36 a 37
+  Texto1 := Texto1 + Monta_Numero('',2);                                                 //Classificação 1 para integração contabil   Tamanho 2 - 38 a 39
+  Texto1 := Texto1 + Monta_Numero('',2);                                                 //Classificação 1 para integração contabil   Tamanho 2 - 40 a 41
+  texto2 := fDMIntegracao.qFornecedorCNPJ_CPF.AsString;                                  //CNPJ/CPF do destinatário   Tamanho 18 - 51 a 68
+  texto1 := texto1 + Formatar_Campo(texto2,18);
+  if fDMIntegracao.cdsNotaVLR_NOTA.AsFloat > 0 then                                    //Valor Contábil   Tamanho 12 - 69 a 80
+    Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsNotaVLR_NOTA.AsFloat),12)
+  else
+    Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base PIS   Tamanho 12 - 81 a 92
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base Cofins   Tamanho 12 - 93 a 104
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base CSLL   Tamanho 12 - 105 a 116
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base IRPJ   Tamanho 12 - 117 a 128
+//  Texto1 := Texto1 + Formatar_Campo('',8);                                               //Brancos  Tamanho 8 - 129 a 136
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS A  Tamanho 12 - 137 a 148
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS A  Tamanho 4 - 149 a 152
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor ICMS A  Tamanho 12 - 153 a 164
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS B  Tamanho 12 - 165 a 176
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS B  Tamanho 4 - 177 a 180
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor ICMS B  Tamanho 12 - 181 a 192
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS C  Tamanho 12 - 193 a 204
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS C  Tamanho 4 - 205 a 208
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor ICMS C  Tamanho 12 - 209 a 220
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS D  Tamanho 12 - 221 a 232
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS D  Tamanho 4 - 233 a 236
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor ICMS D  Tamanho 12 - 237 a 248
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de isentas de ICMS   Tamanho 12 - 249 a 260
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de outras de ICMS   Tamanho 12 - 261 a 272
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base IPI   Tamanho 12 - 273 a 284
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor IPI   Tamanho 12 - 285 a 296
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de isentas de IPI   Tamanho 12 - 297 a 308
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de outras de IPI   Tamanho 12 - 309 a 320
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de mercadorias com substituição tributária    Tamanho 12 - 321 a 332
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base da substituição tributária    Tamanho 12 - 333 a 344
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //ICMS da substituição tributária    Tamanho 12 - 345 a 356
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de mercadorias Diferidas    Tamanho 12 - 357 a 368
+  Texto1 := Texto1 + Formatar_Campo('',50);                                              //Observações   Tamanho 50 - 421 a 470
+  Texto1 := Texto1 + Formatar_Campo('NFSE',5);                                           //Espécie  Tamanho 5 - 471 a 475
+  Texto1 := Texto1 + Formatar_Campo('N',1);                                              //Venda a Vista  Tamanho 1 - 476 a 476
+  Texto1 := Texto1 + Monta_Numero('',4);                                                 //Natureza Operação ST (CFOP) Tamanho 4 - 477 a 480
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),8);                              //Base Pis/Cofins ST   Tamanho 8 - 481 a 488
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ISS   Tamanho 12 - 369 a 380
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ISS   Tamanho 4 - 381 a 384
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor ISS   Tamanho 12 - 385 a 396
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor Isentas ISS   Tamanho 12 - 397 a 408
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor IRRF Retido  Tamanho 12 - 409 a 420
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Pis Retido  Tamanho 12 - 490 a 501
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Cofins Retido  Tamanho 12 - 502 a 513
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //CSLL Retido  Tamanho 12 - 514 a 525
+  Texto1 := Texto1 + Monta_Numero('',4);                                                 //Operação contábil  Tamanho 4 - 534 a 537
+  Texto1 := Texto1 + Monta_Numero('',8);                                                 //Data de recebimento  Tamanho 8 - 526 a 533
+  Texto1 := Texto1 + Monta_Numero('0',6);                                                //CliFor  Tamanho 6 - 566 a 571
+  Texto1 := Texto1 + Formatar_Campo('',18);                                              //Identificação Exterior   Tamanho 18 - 572 a 589
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor INSS retido  Tamanho 12 - 538 a 549
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor FUNRURAL retido  Tamanho 12 - 550 a 561
+  Texto1 := Texto1 + Formatar_Campo('',4);                                               //Código do serviço  Tamanho 4 - 562 a 565
+  Texto1 := Texto1 + Formatar_Campo('N',4);                                              //ISS Retido  Tamanho 4 - 534 a 537
+  Texto1 := Texto1 + Formatar_Campo('N',4);                                              //ISS Devido  Tamanho 4 - 534 a 537
+  Texto1 := Texto1 + Formatar_Campo('',2);                                               //UF Prestacao Tamanho 2 - 534 a 537
+  Texto1 := Texto1 + Monta_Numero('0',7);                                                //Municipio Prestação Tamanho 7 - 534 a 537
+  Texto1 := Texto1 + Formatar_Campo('0',1);                                              //Tipo emissão Tamanho 1 - 534 a 537
+  Texto1 := Texto1 + Monta_Numero('0',1);                                                //Modalidade do frete  Tamanho 1 - 489 a 489
+  Texto1 := Texto1 + Formatar_Campo('',5);                                               //Branco   Tamanho 5 - 590 a 594
+  Texto1 := Texto1 + Formatar_Campo('',5);                                               //Uso da EBS   Tamanho 5 - 590 a 594
+  vContador := vContador + 1;
+  Texto1 := Texto1 + Monta_Numero(IntToStr(vContador),6);                                //Sequencia   Tamanho 6 - 595 a 600
+  Texto1 := Texto1 + Monta_Numero('0',9);                                                //Número da Nota2  Tamanho 9 - 595 a 600
+  Texto1 := Texto1 + Formatar_Campo('',50);                                              //Observações 2  Tamanho 50 - 595 a 600
+  Texto1 := Texto1 + Formatar_Campo('',50);                                              //Observações 2  Tamanho 50 - 595 a 600
+  Texto1 := Texto1 + Monta_Numero('0',6);                                                //Centro de Custo  Tamanho 6 - 595 a 600
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base de Pis/Cofins/ICMS ST  Tamanho 12 - 550 a 561
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor FUNRURAL retido  Tamanho 12 - 550 a 561
+  Texto1 := Texto1 + Monta_Numero('0',8);                                                //Data Emissao RPS  Tamanho 8 - 595 a 600
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //ICMS relativo ao FCP  Tamanho 12 - 550 a 561
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //ICMS UF Destino  Tamanho 12 - 550 a 561
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //ICMS UF Origem  Tamanho 12 - 550 a 561
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS E Tamanho 12 - 550 a 561
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS E  Tamanho 4 - 550 a 561
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Valor ICMS E Tamanho 4 - 550 a 561
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS F Tamanho 12 - 550 a 561
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS F  Tamanho 4 - 550 a 561
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Valor ICMS F Tamanho 4 - 550 a 561
+  Writeln(txt,texto1);
+end;
+
+procedure TfrmIntegracao.prc_Itens_Nota_Fiscal;
+var
+  texto1, texto2 : String;
+begin
+  Texto1 := '2';                                                                                       //Tipo Registro   Tamanho 1 - 1 a 1
+  Texto1 := Texto1 + Monta_Numero(fDMIntegracao.cdsItensID_PRODUTO.AsString,10);                       //Código Inicial   Tamanho 10 - 2 a 11
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensQTD.AsFloat),9);            //Quantidade   Tamanho 9 - 12 a 20
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_UNITARIO.AsFloat),12);  //Valor Unitário   Tamanho 12 - 21 a 32
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),13);                                           //Quantidade2   Tamanho 13 - 33 a 45
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_DESCONTO.AsFloat),12);  //Valor Desconto   Tamanho 12 - 46 a 57
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensBASE_ICMS.AsFloat),12);     //Base ICMS    Tamanho 12 - 58 a 69
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensPERC_ICMS.AsFloat),5);      //Alíquota ICMS    Tamanho 5 - 70 a 74
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_IPI.AsFloat),12);       //Valor IPI    Tamanho 12 - 75 a 86
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensBASE_ICMSSUBST.AsFloat),12);//Base ICMS ST    Tamanho 12 - 87 a 98
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensPERC_IPI.AsFloat),5);       //Aliquota IPI    Tamanho 5 - 99 a 103
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),5);                                            //Aliquota Redução ICMS    Tamanho 5 - 104 a 108
+  Texto1 := Texto1 + Monta_Numero(SQLLocate('TAB_CSTICMS','ID','COD_CST',fDMIntegracao.cdsItensID_CSTICMS.asString),3);       //CST ICMS    Tamanho 3 - 109 a 111
+  Texto1 := Texto1 + Formatar_Campo('',15);                                                            //Identificação   Tamanho 15 - 112 a 126
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),3);                                               //Situação tributária do IPI    Tamanho 3 - 127 a 129
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensBASE_IPI.AsFloat),12);      //Base IPI ST    Tamanho 12 - 130 a 141
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),2);                                               //Situação tributária do PIS    Tamanho 2 - 142 a 143
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Base PIS     Tamanho 12 - 144 a 155
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),7);                                            //Aliquota PIS    Tamanho 7 - 156 a 162
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),13);                                           //Quantidade Base PIS    Tamanho 13 - 163 a 175
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),14);                                           //Aliquota PIS (R$)    Tamanho 14 - 176 a 189
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Valor PIS    Tamanho 12 - 190 a 201
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),2);                                               //Situação tributária do Cofins    Tamanho 2 - 202 a 203
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Base Cofins     Tamanho 12 - 204 a 215
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),7);                                            //Aliquota Cofins    Tamanho 7 - 216 a 222
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),13);                                           //Quantidade Base Cofins    Tamanho 13 - 223 a 235
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),14);                                           //Aliquota Cofins (R$)    Tamanho 14 - 236 a 249
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Valor Cofins    Tamanho 12 - 250 a 261
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_ICMSSUBST.AsFloat),12); //Valor ICMS ST    Tamanho 12 - 262 a 273
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),5);                                            //Aliquota ICMS ST    Tamanho 5 - 274 a 278
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_ICMS.AsFloat),12);      //Valor ICMS    Tamanho 12 - 279 a 290
+  Texto1 := Texto1 + Formatar_Campo(SQLLocate('TAB_CFOP','ID','CODCFOP',fDMIntegracao.cdsItensID_CFOP.AsString),15);//CFOP   Tamanho 15 - 291 a 294
+  Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsItensUNIDADE.AsString,6);                         //Unidade   Tamanho 6 - 295 a 300
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Base ICMS Dif Aliqutoa    Tamanho 12 - 301 a 312
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Base ICMS Origem Dif Aliqutoa    Tamanho 12 - 313 a 324
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Base ICMS Interno Dif Aliqutoa   Tamanho 12 - 325 a 336
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //ICMS Recolher Dif Aliquota   Tamanho 12 - 337 a 348
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Base ICMS Antecipação Parcial   Tamanho 12 - 349 a 360
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //ICMS Origem Antecipação Parcial   Tamanho 12 - 361 a 372
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //ICMS Interno Antecipação Parcial   Tamanho 12 - 373 a 384
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //ICMS a Recolher Antecipação Parcial   Tamanho 12 - 385 a 396
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Base Subs.Trib. Antecipação   Tamanho 12 - 397 a 408
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //MVA Subs.Trib. Antecipação   Tamanho 12 - 409 a 420
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Base Ajustada Subs.Trib. Antecipação   Tamanho 12 - 421 a 432
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //ICMS Origem Subs.Trib. Antecipação   Tamanho 12 - 433 a 444
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //ICMS Interno Subs.Trib. Antecipação   Tamanho 12 - 445 a 456
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //ICMS Recolher Subs.Trib. Antecipação   Tamanho 12 - 457 a 468
+  Texto1 := Texto1 + Formatar_Campo('N',1);                                                            //CST Simples Nacional   Tamanho 1 - 469 a 469
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Valor ICMS Antecipação Parcial  Tamanho 12 - 470 a 481
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),2);                                               //Alíquota Desconto condicional    Tamanho 2 - 482 a 483
+  Texto1 := Texto1 + Formatar_Campo('N',1);                                                            //Produto Industrializado   Tamanho 1 - 484 a 484
+  Texto1 := Texto1 + Formatar_Campo('',5);                                                             //Branco   Tamanho 5 - 485 a 489
+  Texto1 := Texto1 + Formatar_Campo('',5);                                                             //Uso da EBS  Tamanho 5 - 490 a 494
+  vContador := vContador + 1;
+  Texto1 := Texto1 + Monta_Numero(IntToStr(vContador),6);                                              //Sequencia   Tamanho 6 - 495 a 500
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Regime cumulativo - Crédito Pis  Tamanho 12 - 501 a 512
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Regime cumulativo - Crédito Cofins  Tamanho 12 - 513 a 524
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_FRETE.AsFloat),12);     //Valor Frete  Tamanho 12 - 525 a 536
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Seguro   Tamanho 12 - 537 a 548
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Despesas  Tamanho 12 - 549 a 560
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),4);                                               //CFOP Saída  Tamanho 4 - 561 a 564
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),1);                                               //Origem  Tamanho 1 - 565 a 565
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),2);                                               //Saída CST  Tamanho 2 - 566 a 567
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Saída Base ICMS  Tamanho 12 - 568 a 579
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),5);                                            //Saída Alíquota ICMS  Tamanho 5 - 580 a 584
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Saída Valor ICMS  Tamanho 12 - 585 a 596
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Saída Base ICMS ST  Tamanho 12 - 597 a 608
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),5);                                            //Saída Alíquota ICMS ST  Tamanho 5 - 609 a 613
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Saída Valor ICMS ST Tamanho 12 - 614 a 625
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),2);                                               //Saída CST IPI  Tamanho 2 - 626 a 627
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Saída Base IPI  Tamanho 12 - 628 a 639
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),5);                                            //Saída Alíquota IPI  Tamanho 5 - 640 a 644
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Saída Valor IPI Tamanho 12 - 645 a 656
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),2);                                               //Saída CST Pis  Tamanho 2 - 657 a 658
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Saída Base Pis  Tamanho 12 - 659 a 670
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),7);                                            //Saída Alíquota Pis  Tamanho 7 - 671 a 677
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Saída Valor Pis Tamanho 12 - 678 a 689
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),13);                                           //Saída Qtde Base Pis Tamanho 13 - 690 a 702
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),14);                                           //Saída Aliquota Valor Pis Tamanho 14 - 703 a 716
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),2);                                               //Saída CST Cofins  Tamanho 2 - 717 a 718
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Saída Base Cofins  Tamanho 12 - 719 a 730
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),7);                                            //Saída Alíquota Cofins  Tamanho 7 - 731 a 737
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Saída Valor Cofins Tamanho 12 - 738 a 749
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),13);                                           //Saída Qtde Base Cofins Tamanho 13 - 750 a 762
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),14);                                           //Saída Aliquota Valor Cofins Tamanho 14 - 763 a 776
+  Texto1 := Texto1 + Formatar_Campo('',30);                                                            //Identificação2   Tamanho 30 - 777 a 806
+  Texto1 := Texto1 + Formatar_Campo('',20);                                                            //Código de Barras(Gtin)   Tamanho 20 - 807 a 826
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //MVA Original - Subst Trib. Antec. Tamanho 12 - 827 a 838
+  Texto1 := Texto1 + Formatar_Campo('',20);                                                            //Número do Lote   Tamanho 20 - 839 a 858
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),11);                                           //Qtde Item por Lote  Tamanho 11 - 859 a 869
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),8);                                               //Data de Fabricação  Tamanho 8 - 870 a 877
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0',0),8);                                               //Data de Validade  Tamanho 8 - 878 a 885
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Valor do Preço  Tamanho 12 - 886 a 897
+  Writeln(txt,texto1);
+end;
+
+procedure TfrmIntegracao.prc_Montar_DadosComplementares;
+var
+  Texto1 : String;
+begin
+  Texto1 := '5';                                                                                       //Tipo Registro   Tamanho 1 - 1 a 1
+  Texto1 := Texto1 + Monta_Numero('0',12);                                                             //Valor Mercadorias   Tamanho 12 - 2 a 13
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Desconto   Tamanho 12 - 14 a 25
+  Texto1 := Texto1 + Monta_Numero('0',12);                                                             //Frete   Tamanho 12 - 26 a 37
+  Texto1 := Texto1 + Monta_Numero('0',12);                                                             //Despesas   Tamanho 12 - 38 a 49
+  Texto1 := Texto1 + Monta_Numero('0',12);                                                             //Seguro   Tamanho 12 - 50 a 61
+  Texto1 := Texto1 + Monta_Numero('0',8);                                                              //Peso Bruto   Tamanho 8 - 62 a 69
+  Texto1 := Texto1 + Monta_Numero('0',8);                                                              //Peso Líquido   Tamanho 8 - 70 a 77
+  Texto1 := Texto1 + Monta_Numero('0',18);                                                             //CNPJ/CPF Transportador   Tamanho 18 - 78 a 95
+  Texto1 := Texto1 + Monta_Numero('0',1);                                                              //Meio de Transporte   Tamanho 1 - 96 a 96
+  Texto1 := Texto1 + Formatar_Campo('',15);                                                            //Placa   Tamanho 15 - 97 a 111
+  Texto1 := Texto1 + Monta_Numero('0',6);                                                              //Volumes   Tamanho 6 - 112 a 117
+  Texto1 := Texto1 + Formatar_Campo('',10);                                                            //Espécie   Tamanho 10 - 118 a 127
+  Texto1 := Texto1 + Monta_Numero('0',12);                                                             //Número RE   Tamanho 12 - 128 a 139
+  Texto1 := Texto1 + Monta_Numero('0',11);                                                             //Número de Despacho Tamanho 11 - 140 a 150
+  Texto1 := Texto1 + Monta_Numero('0',6);                                                              //País Destino   Tamanho 6 - 151 a 156
+  Texto1 := Texto1 + Monta_Numero('0',6);                                                              //Moeda    Tamanho 6 - 157 a 162
+  Texto1 := Texto1 + Monta_Numero('0',8);                                                              //Data Despacho    Tamanho 8 - 163 a 170
+  Texto1 := Texto1 + Monta_Numero('0',12);                                                             //Valor Despacho    Tamanho 12 - 171 a 182
+  Texto1 := Texto1 + Formatar_Campo('',18);                                                            //CNPJ/CPF Remetente    Tamanho 18 - 183 a 200
+  Texto1 := Texto1 + Formatar_Campo('',2);                                                             //UF Destino     Tamanho 2 - 201 a 202
+  Texto1 := Texto1 + Formatar_Campo('',18);                                                            //Identificação Exterior Remetente   Tamanho 18 - 203 a 220
+  Texto1 := Texto1 + Formatar_Campo('N',1);                                                            //Redespacho     Tamanho 1 - 221 a 221
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //INSS Retido    Tamanho 12 - 222 a 233
+  Texto1 := texto1 + Monta_Numero('0',12);                                                             //FUNRURAL    Tamanho 12 - 234 a 245
+  Texto1 := texto1 + Formatar_Campo('',44);                                                            //Chave NFe    Tamanho 44 - 246 a 289
+  Texto1 := texto1 + Formatar_Campo('N',1);                                                            //ISS Retido    Tamanho 1 - 290 a 290
+  Texto1 := texto1 + Formatar_Campo('N',1);                                                            //ISS Devido Prestação  Tamanho 1 - 291 a 291
+  Texto1 := texto1 + Formatar_Campo('',2);                                                             //UF Prestação  Tamanho 2 - 292 a 293
+  Texto1 := texto1 + Monta_Numero('',7);                                                               //Municipio Prestação  Tamanho 7 - 294 a 300
+  Texto1 := texto1 + Formatar_Campo('',2);                                                             //UF Origem  Tamanho 2 - 301 a 302
+  Texto1 := texto1 + Monta_Numero('',7);                                                               //Municipio Origem  Tamanho 7 - 303 a 309
+  Texto1 := texto1 + Formatar_Campo('N',1);                                                            //ICMS-ST Retido Antecipadamente  Tamanho 1 - 310 a 310
+  Texto1 := texto1 + Formatar_Campo('',20);                                                            //Inscrição Estadual Destinatário  Tamanho 20 - 311 a 330
+  Texto1 := texto1 + Monta_Numero('0',1);                                                              //Tipo de Assinante Telecom Tamanho 1 - 331 a 331
+  Texto1 := texto1 + Monta_Numero('0',1);                                                              //Tipo de Utilização Telecom Tamanho 1 - 332 a 332
+  Texto1 := texto1 + Formatar_Campo('',10);                                                            //Número Terminal Telecom  Tamanho 10 - 333 a 342
+  Texto1 := texto1 + Monta_Numero('0',9);                                                              //Número Fatura Telecom   Tamanho 9 - 343 a 351
+  Texto1 := texto1 + Formatar_Campo('',18);                                                            //Consignatário  Tamanho 18 - 352 a 369
+  Texto1 := texto1 + Formatar_Campo('',119);                                                           //Brancos  Tamanho 119 - 370 a 489
+  Texto1 := texto1 + Formatar_Campo('',5);                                                             //Uso EBS  Tamanho 5 - 490 a 494
+  vContador := vContador + 1;
+  Texto1    := Texto1 + Monta_Numero(IntToStr(vContador),6);                                           //Sequência   Tamanho 6 - 495 a 500
+  Writeln(txt,texto1);
 end;
 
 end.

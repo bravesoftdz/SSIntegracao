@@ -811,28 +811,32 @@ object DMIntegracao: TDMIntegracao
     NoMetadata = True
     GetMetadata = False
     CommandText = 
-      'SELECT N.ID, N.tipo_reg, N.tipo_nota, N.numnota, N.serie, N.id_c' +
-      'liente, N.dtemissao,'#13#10'N.dtsaidaentrada, coalesce(COND.TIPO,'#39'X'#39') ' +
-      'TIPO_CONDICAO,'#13#10'coalesce(N.tipo_frete,'#39#39') tipo_frete, '#39'N'#39' TIPO_N' +
-      'S'#13#10#13#10'FROM NOTAFISCAL N'#13#10'LEFT JOIN condpgto COND'#13#10'ON N.id_condpgt' +
-      'o = COND.ID'#13#10'WHERE N.TIPO_REG = '#39'NTE'#39#13#10'and n.dtsaidaentrada betw' +
-      'een :Data1 and :Data2'#13#10'and n.FILIAL = :FILIAL'#13#10#13#10'UNION'#13#10#13#10'SELECT' +
-      ' NS.ID, NS.tipo_doc, NS.tipo_es, NS.numnota, NS.serie, NS.id_cli' +
-      'ente, NS.dtemissao_cad,'#13#10'NS.dtentrada, coalesce(COND.TIPO,'#39'X'#39') T' +
-      'IPO_CONDICAO, '#39#39' AS TIPO_FRETE, '#39'S'#39' TIPO_NS'#13#10'FROM NOTASERVICO NS' +
-      #13#10'LEFT JOIN condpgto COND'#13#10'ON NS.id_condpgto = COND.ID'#13#10'WHERE NS' +
-      '.TIPO_ES = '#39'E'#39#13#10'  and ns.dtentrada between :Data1 and :Data2'#13#10'  ' +
-      'and nS.FILIAL = :FILIAL'#13#10#13#10#13#10
+      'select N.ID, N.TIPO_REG, N.TIPO_NOTA, N.NUMNOTA, N.SERIE, N.ID_C' +
+      'LIENTE, N.DTEMISSAO, N.DTSAIDAENTRADA,'#13#10'       coalesce(COND.TIP' +
+      'O, '#39'X'#39') TIPO_CONDICAO, coalesce(N.TIPO_FRETE, '#39#39') TIPO_FRETE, '#39'N' +
+      #39' TIPO_NS, N.VLR_NOTA VLR_NOTA,'#13#10'       N.VLR_PIS VLR_PIS, N.VLR' +
+      '_COFINS VLR_COFINS, N.BASE_ICMS BASE_ICMS, N.VLR_ICMS VLR_ICMS'#13#10 +
+      #13#10'from NOTAFISCAL N'#13#10'left join CONDPGTO COND on N.ID_CONDPGTO = ' +
+      'COND.ID'#13#10'where N.TIPO_REG = '#39'NTE'#39' and'#13#10'      N.DTSAIDAENTRADA be' +
+      'tween :DATA1 and :DATA2 and'#13#10'      N.FILIAL = :FILIAL'#13#10#13#10'union'#13#10 +
+      #13#10'select NS.ID, NS.TIPO_DOC, NS.TIPO_ES, NS.NUMNOTA, NS.SERIE, N' +
+      'S.ID_CLIENTE, NS.DTEMISSAO_CAD, NS.DTENTRADA,'#13#10'       coalesce(C' +
+      'OND.TIPO, '#39'X'#39') TIPO_CONDICAO, '#39#39' as TIPO_FRETE, '#39'S'#39' TIPO_NS, NS.' +
+      'VLR_TOTAL VLR_NOTA,'#13#10'       NS.VLR_PIS VLR_PIS, NS.VLR_COFINS VL' +
+      'R_COFINS, CAST('#39'0.00'#39' AS FLOAT) BASE_ICMS, NS.VLR_ICMS VLR_ICMS'#13 +
+      #10'from NOTASERVICO NS'#13#10'left join CONDPGTO COND on NS.ID_CONDPGTO ' +
+      '= COND.ID'#13#10'where NS.TIPO_ES = '#39'E'#39' and'#13#10'      NS.DTENTRADA betwee' +
+      'n :DATA1 and :DATA2 and'#13#10'      NS.FILIAL = :FILIAL    '
     MaxBlobSize = -1
     Params = <
       item
         DataType = ftDate
-        Name = 'Data1'
+        Name = 'DATA1'
         ParamType = ptInput
       end
       item
         DataType = ftDate
-        Name = 'Data2'
+        Name = 'DATA2'
         ParamType = ptInput
       end
       item
@@ -842,12 +846,12 @@ object DMIntegracao: TDMIntegracao
       end
       item
         DataType = ftDate
-        Name = 'Data1'
+        Name = 'DATA1'
         ParamType = ptInput
       end
       item
         DataType = ftDate
-        Name = 'Data2'
+        Name = 'DATA2'
         ParamType = ptInput
       end
       item
@@ -914,6 +918,21 @@ object DMIntegracao: TDMIntegracao
       FixedChar = True
       Size = 1
     end
+    object cdsNotaVLR_NOTA: TFloatField
+      FieldName = 'VLR_NOTA'
+    end
+    object cdsNotaVLR_PIS: TFloatField
+      FieldName = 'VLR_PIS'
+    end
+    object cdsNotaVLR_COFINS: TFloatField
+      FieldName = 'VLR_COFINS'
+    end
+    object cdsNotaBASE_ICMS: TFloatField
+      FieldName = 'BASE_ICMS'
+    end
+    object cdsNotaVLR_ICMS: TFloatField
+      FieldName = 'VLR_ICMS'
+    end
   end
   object dsNota: TDataSource
     DataSet = cdsNota
@@ -924,21 +943,25 @@ object DMIntegracao: TDMIntegracao
     NoMetadata = True
     GetMetadata = False
     CommandText = 
-      'select aux.*'#13#10'from ('#13#10'SELECT I.ID_CFOP, I.ID_PRODUTO, I.QTD, I.V' +
-      'LR_UNITARIO, I.vlr_total, I.base_ipi,'#13#10'I.base_icms, I.base_icmss' +
-      'ubst, I.vlr_icms, I.vlr_ipi, I.vlr_icmssubst, '#39'N'#39' TIPO_NS,'#13#10'i.id' +
-      ' id_nota, i.perc_icms, i.vlr_icms_uf_dest, i.vlr_icms_uf_remet, ' +
-      'i.vlr_icms_fcp_dest,'#13#10'0 base_inss,'#13#10'0 vlr_inss,'#13#10'0 base_calculo,' +
-      #13#10'0 vlr_iss,'#13#10'0 vlr_iss_retido,'#13#10'0 vlr_ir,'#13#10'0 vlr_pis,'#13#10'0 vlr_co' +
-      'fins,'#13#10'0 vlr_csll,'#13#10'0 retem_inss'#13#10'FROM NOTAFISCAL_ITENS I'#13#10'where' +
-      ' i.id = :ID'#13#10#13#10'UNION'#13#10#13#10'SELECT 0, SI.id_servico_int ID_PRODUTO, ' +
-      'SI.QTD, SI.VLR_UNITARIO, SI.vlr_total, 0,'#13#10'0, 0, 0, 0, 0, '#39'S'#39' TI' +
-      'PO_NS, s.id id_nota, 0 perc_icms, 0 vlr_icms_uf_dest,'#13#10'0 vlr_icm' +
-      's_uf_remet, 0 vlr_icms_fcp_dest,'#13#10'si.base_inss,'#13#10'si.vlr_inss,'#13#10's' +
-      'i.base_calculo,'#13#10'si.vlr_iss,'#13#10'si.vlr_iss_retido,'#13#10'si.vlr_ir,'#13#10'si' +
-      '.vlr_pis,'#13#10'si.vlr_cofins,'#13#10'si.vlr_csll,'#13#10's.retem_inss'#13#10'FROM nota' +
-      'servico S'#13#10'INNER JOIN notaservico_itens SI'#13#10'on s.id = si.id'#13#10'whe' +
-      're SI.id = :ID) aux'#13#10'where aux.tipo_ns = :TIPO_NS'#13#10#13#10
+      'select AUX.*'#13#10'from (select I.ID_CFOP, I.ID_PRODUTO, I.QTD, I.VLR' +
+      '_UNITARIO, I.VLR_TOTAL, I.BASE_IPI, I.BASE_ICMS, I.BASE_ICMSSUBS' +
+      'T,'#13#10'             I.VLR_ICMS, I.VLR_IPI, I.VLR_ICMSSUBST, '#39'N'#39' TIP' +
+      'O_NS, I.ID ID_NOTA, I.PERC_ICMS, I.VLR_ICMS_UF_DEST,'#13#10'          ' +
+      '   I.VLR_ICMS_UF_REMET, I.VLR_ICMS_FCP_DEST, 0 BASE_INSS, 0 VLR_' +
+      'INSS, 0 BASE_CALCULO, 0 VLR_ISS,'#13#10'             0 VLR_ISS_RETIDO,' +
+      ' 0 VLR_IR, 0 VLR_PIS, 0 VLR_COFINS, 0 VLR_CSLL, 0 RETEM_INSS, I.' +
+      'VLR_DESCONTO,PERC_IPI,'#13#10'             I.ID_CSTICMS,I.UNIDADE, I.V' +
+      'LR_FRETE'#13#10'      from NOTAFISCAL_ITENS I'#13#10'      where I.ID = :ID'#13 +
+      #10'union'#13#10'      select 0, SI.ID_SERVICO_INT ID_PRODUTO, SI.QTD, SI' +
+      '.VLR_UNITARIO, SI.VLR_TOTAL, 0, 0, 0, 0, 0, 0, '#39'S'#39' TIPO_NS,'#13#10'   ' +
+      '          S.ID ID_NOTA, 0 PERC_ICMS, 0 VLR_ICMS_UF_DEST, 0 VLR_I' +
+      'CMS_UF_REMET, 0 VLR_ICMS_FCP_DEST, SI.BASE_INSS,'#13#10'             S' +
+      'I.VLR_INSS, SI.BASE_CALCULO, SI.VLR_ISS, SI.VLR_ISS_RETIDO, SI.V' +
+      'LR_IR, SI.VLR_PIS, SI.VLR_COFINS,'#13#10'             SI.VLR_CSLL, S.R' +
+      'ETEM_INSS, 0 VLR_DESCONTO,0 PERC_IPI,0 ID_CSTICMS, '#39#39' UNIDADE, 0' +
+      ' VLR_FRETE'#13#10'      from NOTASERVICO S'#13#10'      inner join NOTASERVI' +
+      'CO_ITENS SI on S.ID = SI.ID'#13#10'      where SI.ID = :ID) AUX'#13#10'where' +
+      ' AUX.TIPO_NS = :TIPO_NS'#13#10
     MaxBlobSize = -1
     Params = <
       item
@@ -1058,6 +1081,22 @@ object DMIntegracao: TDMIntegracao
       FieldName = 'RETEM_INSS'
       Size = 11
     end
+    object cdsItensVLR_DESCONTO: TFloatField
+      FieldName = 'VLR_DESCONTO'
+    end
+    object cdsItensPERC_IPI: TFloatField
+      FieldName = 'PERC_IPI'
+    end
+    object cdsItensID_CSTICMS: TIntegerField
+      FieldName = 'ID_CSTICMS'
+    end
+    object cdsItensUNIDADE: TStringField
+      FieldName = 'UNIDADE'
+      Size = 6
+    end
+    object cdsItensVLR_FRETE: TFloatField
+      FieldName = 'VLR_FRETE'
+    end
   end
   object dsItens: TDataSource
     DataSet = cdsItens
@@ -1068,7 +1107,7 @@ object DMIntegracao: TDMIntegracao
     Active = True
     Aggregates = <>
     Params = <>
-    Left = 472
+    Left = 464
     Top = 312
     Data = {
       010200009619E0BD0100000018000000170000000000030000000102074E756D
@@ -1527,5 +1566,539 @@ object DMIntegracao: TDMIntegracao
     DataSet = mCFOP
     Left = 496
     Top = 312
+  end
+  object qFornecedor: TSQLQuery
+    MaxBlobSize = -1
+    Params = <
+      item
+        DataType = ftInteger
+        Name = 'CODIGO'
+        ParamType = ptInput
+      end>
+    SQL.Strings = (
+      'SELECT * FROM PESSOA'
+      'WHERE CODIGO = :CODIGO')
+    SQLConnection = dmDatabase.scoDados
+    Left = 672
+    Top = 416
+    object qFornecedorCODIGO: TIntegerField
+      FieldName = 'CODIGO'
+      Required = True
+    end
+    object qFornecedorNOME: TStringField
+      FieldName = 'NOME'
+      Size = 60
+    end
+    object qFornecedorFANTASIA: TStringField
+      FieldName = 'FANTASIA'
+      Size = 30
+    end
+    object qFornecedorENDERECO: TStringField
+      FieldName = 'ENDERECO'
+      Size = 60
+    end
+    object qFornecedorCOMPLEMENTO_END: TStringField
+      FieldName = 'COMPLEMENTO_END'
+      Size = 60
+    end
+    object qFornecedorNUM_END: TStringField
+      FieldName = 'NUM_END'
+    end
+    object qFornecedorBAIRRO: TStringField
+      FieldName = 'BAIRRO'
+      Size = 30
+    end
+    object qFornecedorID_CIDADE: TIntegerField
+      FieldName = 'ID_CIDADE'
+    end
+    object qFornecedorCIDADE: TStringField
+      FieldName = 'CIDADE'
+      Size = 40
+    end
+    object qFornecedorUF: TStringField
+      FieldName = 'UF'
+      FixedChar = True
+      Size = 2
+    end
+    object qFornecedorCEP: TStringField
+      FieldName = 'CEP'
+      Size = 10
+    end
+    object qFornecedorDDDFONE1: TIntegerField
+      FieldName = 'DDDFONE1'
+    end
+    object qFornecedorTELEFONE1: TStringField
+      FieldName = 'TELEFONE1'
+      Size = 15
+    end
+    object qFornecedorDDDFONE2: TIntegerField
+      FieldName = 'DDDFONE2'
+    end
+    object qFornecedorTELEFONE2: TStringField
+      FieldName = 'TELEFONE2'
+      Size = 15
+    end
+    object qFornecedorDDDFAX: TIntegerField
+      FieldName = 'DDDFAX'
+    end
+    object qFornecedorFAX: TStringField
+      FieldName = 'FAX'
+      Size = 15
+    end
+    object qFornecedorPESSOA: TStringField
+      FieldName = 'PESSOA'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorCNPJ_CPF: TStringField
+      FieldName = 'CNPJ_CPF'
+    end
+    object qFornecedorINSCR_EST: TStringField
+      FieldName = 'INSCR_EST'
+      Size = 18
+    end
+    object qFornecedorENDERECO_ENT: TStringField
+      FieldName = 'ENDERECO_ENT'
+      Size = 40
+    end
+    object qFornecedorCOMPLEMENTO_END_ENT: TStringField
+      FieldName = 'COMPLEMENTO_END_ENT'
+      Size = 60
+    end
+    object qFornecedorNUM_END_ENT: TStringField
+      FieldName = 'NUM_END_ENT'
+    end
+    object qFornecedorBAIRRO_ENT: TStringField
+      FieldName = 'BAIRRO_ENT'
+      Size = 26
+    end
+    object qFornecedorID_CIDADE_ENT: TIntegerField
+      FieldName = 'ID_CIDADE_ENT'
+    end
+    object qFornecedorCIDADE_ENT: TStringField
+      FieldName = 'CIDADE_ENT'
+      Size = 40
+    end
+    object qFornecedorCEP_ENT: TStringField
+      FieldName = 'CEP_ENT'
+      Size = 10
+    end
+    object qFornecedorUF_ENT: TStringField
+      FieldName = 'UF_ENT'
+      FixedChar = True
+      Size = 2
+    end
+    object qFornecedorPESSOA_ENT: TStringField
+      FieldName = 'PESSOA_ENT'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorCNPJ_CPF_ENT: TStringField
+      FieldName = 'CNPJ_CPF_ENT'
+      Size = 18
+    end
+    object qFornecedorINSC_EST_ENT: TStringField
+      FieldName = 'INSC_EST_ENT'
+      Size = 18
+    end
+    object qFornecedorENDERECO_PGTO: TStringField
+      FieldName = 'ENDERECO_PGTO'
+      Size = 40
+    end
+    object qFornecedorCOMPLEMENTO_END_PGTO: TStringField
+      FieldName = 'COMPLEMENTO_END_PGTO'
+      Size = 60
+    end
+    object qFornecedorNUM_END_PGTO: TStringField
+      FieldName = 'NUM_END_PGTO'
+    end
+    object qFornecedorBAIRRO_PGTO: TStringField
+      FieldName = 'BAIRRO_PGTO'
+      Size = 26
+    end
+    object qFornecedorID_CIDADE_PGTO: TIntegerField
+      FieldName = 'ID_CIDADE_PGTO'
+    end
+    object qFornecedorCIDADE_PGTO: TStringField
+      FieldName = 'CIDADE_PGTO'
+      Size = 40
+    end
+    object qFornecedorCEP_PGTO: TStringField
+      FieldName = 'CEP_PGTO'
+      Size = 10
+    end
+    object qFornecedorUF_PGTO: TStringField
+      FieldName = 'UF_PGTO'
+      FixedChar = True
+      Size = 2
+    end
+    object qFornecedorUSUARIO: TStringField
+      FieldName = 'USUARIO'
+      Size = 15
+    end
+    object qFornecedorDTCADASTRO: TDateField
+      FieldName = 'DTCADASTRO'
+    end
+    object qFornecedorHRCADASTRO: TTimeField
+      FieldName = 'HRCADASTRO'
+    end
+    object qFornecedorOBS: TMemoField
+      FieldName = 'OBS'
+      BlobType = ftMemo
+      Size = 1
+    end
+    object qFornecedorCAIXAPOSTAL: TStringField
+      FieldName = 'CAIXAPOSTAL'
+      Size = 10
+    end
+    object qFornecedorRG: TStringField
+      FieldName = 'RG'
+      Size = 10
+    end
+    object qFornecedorID_VENDEDOR: TIntegerField
+      FieldName = 'ID_VENDEDOR'
+    end
+    object qFornecedorID_CONDPGTO: TIntegerField
+      FieldName = 'ID_CONDPGTO'
+    end
+    object qFornecedorID_CONTABOLETO: TIntegerField
+      FieldName = 'ID_CONTABOLETO'
+    end
+    object qFornecedorID_TRANSPORTADORA: TIntegerField
+      FieldName = 'ID_TRANSPORTADORA'
+    end
+    object qFornecedorID_TIPOCOBRANCA: TIntegerField
+      FieldName = 'ID_TIPOCOBRANCA'
+    end
+    object qFornecedorID_REDESPACHO: TIntegerField
+      FieldName = 'ID_REDESPACHO'
+    end
+    object qFornecedorID_PAIS: TIntegerField
+      FieldName = 'ID_PAIS'
+    end
+    object qFornecedorID_REGIME_TRIB: TIntegerField
+      FieldName = 'ID_REGIME_TRIB'
+    end
+    object qFornecedorPERC_COMISSAO: TFloatField
+      FieldName = 'PERC_COMISSAO'
+    end
+    object qFornecedorDDD_ENT: TIntegerField
+      FieldName = 'DDD_ENT'
+    end
+    object qFornecedorFONE_ENT: TStringField
+      FieldName = 'FONE_ENT'
+      Size = 15
+    end
+    object qFornecedorDDD_PGTO: TIntegerField
+      FieldName = 'DDD_PGTO'
+    end
+    object qFornecedorFONE_PGTO: TStringField
+      FieldName = 'FONE_PGTO'
+      Size = 15
+    end
+    object qFornecedorINATIVO: TStringField
+      FieldName = 'INATIVO'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorHOMEPAGE: TStringField
+      FieldName = 'HOMEPAGE'
+      Size = 200
+    end
+    object qFornecedorTIPO_FRETE: TStringField
+      FieldName = 'TIPO_FRETE'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorNOME_ENTREGA: TStringField
+      FieldName = 'NOME_ENTREGA'
+      Size = 60
+    end
+    object qFornecedorEMAIL_NFE: TStringField
+      FieldName = 'EMAIL_NFE'
+      Size = 250
+    end
+    object qFornecedorEMAIL_PGTO: TStringField
+      FieldName = 'EMAIL_PGTO'
+      Size = 150
+    end
+    object qFornecedorEMAIL_NFE2: TStringField
+      FieldName = 'EMAIL_NFE2'
+      Size = 150
+    end
+    object qFornecedorPESSOA_PGTO: TStringField
+      FieldName = 'PESSOA_PGTO'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorCNPJ_CPG_PGTO: TStringField
+      FieldName = 'CNPJ_CPG_PGTO'
+      Size = 18
+    end
+    object qFornecedorINSC_EST_PGTO: TStringField
+      FieldName = 'INSC_EST_PGTO'
+      Size = 18
+    end
+    object qFornecedorUF_PLACA: TStringField
+      FieldName = 'UF_PLACA'
+      Size = 2
+    end
+    object qFornecedorPLACA: TStringField
+      FieldName = 'PLACA'
+      Size = 10
+    end
+    object qFornecedorTP_CLIENTE: TStringField
+      FieldName = 'TP_CLIENTE'
+      Size = 1
+    end
+    object qFornecedorTP_FORNECEDOR: TStringField
+      FieldName = 'TP_FORNECEDOR'
+      Size = 1
+    end
+    object qFornecedorTP_TRANSPORTADORA: TStringField
+      FieldName = 'TP_TRANSPORTADORA'
+      Size = 1
+    end
+    object qFornecedorTP_VENDEDOR: TStringField
+      FieldName = 'TP_VENDEDOR'
+      Size = 1
+    end
+    object qFornecedorTIPO_ICMS: TStringField
+      FieldName = 'TIPO_ICMS'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorID_TAB_PRECO: TIntegerField
+      FieldName = 'ID_TAB_PRECO'
+    end
+    object qFornecedorTP_ATELIER: TStringField
+      FieldName = 'TP_ATELIER'
+      Size = 1
+    end
+    object qFornecedorTIPO_COMISSAO: TStringField
+      FieldName = 'TIPO_COMISSAO'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorPERC_COMISSAO_VEND: TFloatField
+      FieldName = 'PERC_COMISSAO_VEND'
+    end
+    object qFornecedorNOME_CONTATO: TStringField
+      FieldName = 'NOME_CONTATO'
+      Size = 40
+    end
+    object qFornecedorINSC_MUNICIPAL: TStringField
+      FieldName = 'INSC_MUNICIPAL'
+      Size = 15
+    end
+    object qFornecedorDT_CONTRATO_INI: TDateField
+      FieldName = 'DT_CONTRATO_INI'
+    end
+    object qFornecedorDT_CONTRATO_FIN: TDateField
+      FieldName = 'DT_CONTRATO_FIN'
+    end
+    object qFornecedorID_SERVICO: TIntegerField
+      FieldName = 'ID_SERVICO'
+    end
+    object qFornecedorID_SERVICO_INT: TIntegerField
+      FieldName = 'ID_SERVICO_INT'
+    end
+    object qFornecedorVLR_SERVICO: TFloatField
+      FieldName = 'VLR_SERVICO'
+    end
+    object qFornecedorCLIENTE_CONTA_ID: TIntegerField
+      FieldName = 'CLIENTE_CONTA_ID'
+    end
+    object qFornecedorFORNECEDOR_CONTA_ID: TIntegerField
+      FieldName = 'FORNECEDOR_CONTA_ID'
+    end
+    object qFornecedorVENDEDOR_CONTA_ID: TIntegerField
+      FieldName = 'VENDEDOR_CONTA_ID'
+    end
+    object qFornecedorTRANSPORTADORA_CONTA_ID: TIntegerField
+      FieldName = 'TRANSPORTADORA_CONTA_ID'
+    end
+    object qFornecedorATELIER_CONTA_ID: TIntegerField
+      FieldName = 'ATELIER_CONTA_ID'
+    end
+    object qFornecedorRETEM_ISS: TStringField
+      FieldName = 'RETEM_ISS'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorRETEM_CSLL: TStringField
+      FieldName = 'RETEM_CSLL'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorRETEM_PISCOFINS: TStringField
+      FieldName = 'RETEM_PISCOFINS'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorRETEM_INSS: TStringField
+      FieldName = 'RETEM_INSS'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorEMAIL_COMPRAS: TStringField
+      FieldName = 'EMAIL_COMPRAS'
+      Size = 200
+    end
+    object qFornecedorCONTATO_COMPRAS: TStringField
+      FieldName = 'CONTATO_COMPRAS'
+      Size = 60
+    end
+    object qFornecedorORGAO_PUBLICO: TStringField
+      FieldName = 'ORGAO_PUBLICO'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorID_NATUREZA: TIntegerField
+      FieldName = 'ID_NATUREZA'
+    end
+    object qFornecedorDIMINUIR_RETENCAO: TStringField
+      FieldName = 'DIMINUIR_RETENCAO'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorPERC_REDUCAO_INSS: TFloatField
+      FieldName = 'PERC_REDUCAO_INSS'
+    end
+    object qFornecedorUSA_TRANSFICMS: TStringField
+      FieldName = 'USA_TRANSFICMS'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorCLIENTE_ESTOQUE: TStringField
+      FieldName = 'CLIENTE_ESTOQUE'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorUSA_TAMANHO_AGRUPADO_NFE: TStringField
+      FieldName = 'USA_TAMANHO_AGRUPADO_NFE'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorCOD_ANT: TIntegerField
+      FieldName = 'COD_ANT'
+    end
+    object qFornecedorID_EDI: TIntegerField
+      FieldName = 'ID_EDI'
+    end
+    object qFornecedorPAI_NOME: TStringField
+      FieldName = 'PAI_NOME'
+      Size = 60
+    end
+    object qFornecedorMAE_NOME: TStringField
+      FieldName = 'MAE_NOME'
+      Size = 60
+    end
+    object qFornecedorTP_ALUNO: TStringField
+      FieldName = 'TP_ALUNO'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorCOBRAR_TAXA_BANCO: TStringField
+      FieldName = 'COBRAR_TAXA_BANCO'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorVLR_LIMITE_CREDITO: TFloatField
+      FieldName = 'VLR_LIMITE_CREDITO'
+    end
+    object qFornecedorINSC_EST_ST: TStringField
+      FieldName = 'INSC_EST_ST'
+      Size = 14
+    end
+    object qFornecedorUF_ST: TStringField
+      FieldName = 'UF_ST'
+      Size = 2
+    end
+    object qFornecedorTIPO_CONSUMIDOR: TSmallintField
+      FieldName = 'TIPO_CONSUMIDOR'
+    end
+    object qFornecedorTIPO_CONTRIBUINTE: TSmallintField
+      FieldName = 'TIPO_CONTRIBUINTE'
+    end
+    object qFornecedorINSC_SUFRAMA: TStringField
+      FieldName = 'INSC_SUFRAMA'
+      Size = 9
+    end
+    object qFornecedorCOD_ALFA: TStringField
+      FieldName = 'COD_ALFA'
+      Size = 15
+    end
+    object qFornecedorTP_PREPOSTO: TStringField
+      FieldName = 'TP_PREPOSTO'
+      Size = 1
+    end
+    object qFornecedorTP_EXPORTACAO: TStringField
+      FieldName = 'TP_EXPORTACAO'
+      Size = 1
+    end
+    object qFornecedorCARIMBO: TStringField
+      FieldName = 'CARIMBO'
+      Size = 25
+    end
+    object qFornecedorDTPEDIDO: TDateField
+      FieldName = 'DTPEDIDO'
+    end
+    object qFornecedorDTNOTA: TDateField
+      FieldName = 'DTNOTA'
+    end
+    object qFornecedorPERC_DESC_SUFRAMA: TFloatField
+      FieldName = 'PERC_DESC_SUFRAMA'
+    end
+    object qFornecedorVLR_LIMITE_COMPRA: TFloatField
+      FieldName = 'VLR_LIMITE_COMPRA'
+    end
+    object qFornecedorID_GRUPO: TIntegerField
+      FieldName = 'ID_GRUPO'
+    end
+    object qFornecedorTP_FUNCIONARIO: TStringField
+      FieldName = 'TP_FUNCIONARIO'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorIMP_COD_PRODUTO_CLI: TStringField
+      FieldName = 'IMP_COD_PRODUTO_CLI'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorFILIAL: TIntegerField
+      FieldName = 'FILIAL'
+    end
+    object qFornecedorVLR_ULT_FATURAMENTO: TFloatField
+      FieldName = 'VLR_ULT_FATURAMENTO'
+    end
+    object qFornecedorQTD_ULT_FATURAMENTO: TFloatField
+      FieldName = 'QTD_ULT_FATURAMENTO'
+    end
+    object qFornecedorCOD_CONTABIL_CLIENTE: TIntegerField
+      FieldName = 'COD_CONTABIL_CLIENTE'
+    end
+    object qFornecedorCOD_CONTABIL_FORNECEDOR: TIntegerField
+      FieldName = 'COD_CONTABIL_FORNECEDOR'
+    end
+    object qFornecedorID_REGIAO_VENDA: TIntegerField
+      FieldName = 'ID_REGIAO_VENDA'
+    end
+    object qFornecedorTIPO_CREDITO: TStringField
+      FieldName = 'TIPO_CREDITO'
+      Size = 1
+    end
+    object qFornecedorUSUARIO_LOG: TStringField
+      FieldName = 'USUARIO_LOG'
+      Size = 15
+    end
+    object qFornecedorPROTESTAR: TStringField
+      FieldName = 'PROTESTAR'
+      FixedChar = True
+      Size = 1
+    end
+    object qFornecedorID_CARTEIRA: TIntegerField
+      FieldName = 'ID_CARTEIRA'
+    end
   end
 end

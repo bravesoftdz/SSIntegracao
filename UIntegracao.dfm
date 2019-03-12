@@ -1,6 +1,6 @@
 object frmIntegracao: TfrmIntegracao
-  Left = 203
-  Top = 47
+  Left = 179
+  Top = 78
   Width = 1055
   Height = 651
   BorderIcons = [biSystemMenu]
@@ -21,8 +21,8 @@ object frmIntegracao: TfrmIntegracao
   object RzPageControl1: TRzPageControl
     Left = 0
     Top = 0
-    Width = 1047
-    Height = 620
+    Width = 1039
+    Height = 612
     ActivePage = TS_NotaEnt
     ActivePageDefault = TS_Geracao
     Align = alClient
@@ -67,8 +67,8 @@ object frmIntegracao: TfrmIntegracao
       object gbxVendedor: TRzGroupBox
         Left = 0
         Top = 214
-        Width = 1043
-        Height = 383
+        Width = 1035
+        Height = 375
         Align = alClient
         BorderColor = clNavy
         BorderInner = fsButtonUp
@@ -89,8 +89,8 @@ object frmIntegracao: TfrmIntegracao
         object SMDBGrid1: TSMDBGrid
           Left = 5
           Top = 18
-          Width = 1033
-          Height = 360
+          Width = 1025
+          Height = 352
           Align = alClient
           Ctl3D = False
           DataSource = DMIntegracao.dsmErros
@@ -135,7 +135,7 @@ object frmIntegracao: TfrmIntegracao
       object Panel2: TPanel
         Left = 0
         Top = 110
-        Width = 1043
+        Width = 1035
         Height = 104
         Align = alTop
         Color = 13948116
@@ -194,7 +194,7 @@ object frmIntegracao: TfrmIntegracao
       object Panel1: TPanel
         Left = 0
         Top = 0
-        Width = 1043
+        Width = 1035
         Height = 110
         Align = alTop
         TabOrder = 2
@@ -420,7 +420,7 @@ object frmIntegracao: TfrmIntegracao
       object Panel3: TPanel
         Left = 0
         Top = 0
-        Width = 1043
+        Width = 1035
         Height = 110
         Align = alTop
         TabOrder = 0
@@ -441,7 +441,7 @@ object frmIntegracao: TfrmIntegracao
           Caption = 'Dt. Inicial:'
         end
         object Label14: TLabel
-          Left = 277
+          Left = 271
           Top = 36
           Width = 42
           Height = 13
@@ -450,14 +450,14 @@ object frmIntegracao: TfrmIntegracao
         end
         object Label15: TLabel
           Left = 9
-          Top = 56
+          Top = 57
           Width = 134
           Height = 13
           Alignment = taRightJustify
           Caption = 'Pasta para gravar o arquivo:'
         end
         object Label16: TLabel
-          Left = 448
+          Left = 440
           Top = 36
           Width = 58
           Height = 13
@@ -471,6 +471,13 @@ object frmIntegracao: TfrmIntegracao
           Height = 13
           Alignment = taRightJustify
           Caption = 'C'#225'lculo do Pis/Cofins:'
+        end
+        object Label18: TLabel
+          Left = 834
+          Top = 72
+          Width = 68
+          Height = 13
+          Caption = 'CFOP Padr'#227'o:'
         end
         object RxDBLookupCombo2: TRxDBLookupCombo
           Left = 146
@@ -486,31 +493,6 @@ object frmIntegracao: TfrmIntegracao
           TabOrder = 0
           OnExit = RxDBLookupCombo1Exit
         end
-        object NxDatePicker4: TNxDatePicker
-          Left = 146
-          Top = 28
-          Width = 110
-          Height = 21
-          TabOrder = 1
-          Text = '17/07/2016'
-          HideFocus = False
-          Date = 42568.000000000000000000
-          NoneCaption = 'None'
-          TodayCaption = 'Today'
-        end
-        object NxDatePicker5: TNxDatePicker
-          Left = 322
-          Top = 28
-          Width = 110
-          Height = 21
-          TabOrder = 2
-          Text = '17/07/2016'
-          OnExit = NxDatePicker2Exit
-          HideFocus = False
-          Date = 42568.000000000000000000
-          NoneCaption = 'None'
-          TodayCaption = 'Today'
-        end
         object btnGerarNotaEnt: TNxButton
           Left = 146
           Top = 72
@@ -524,12 +506,12 @@ object frmIntegracao: TfrmIntegracao
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 5
+          TabOrder = 2
           OnClick = btnGerarNotaEntClick
         end
-        object DirectoryEdit2: TDirectoryEdit
+        object edtDiretorioArquivo: TDirectoryEdit
           Left = 146
-          Top = 48
+          Top = 49
           Width = 473
           Height = 21
           InitialDir = 'C:\'
@@ -537,7 +519,7 @@ object frmIntegracao: TfrmIntegracao
           Ctl3D = False
           NumGlyphs = 1
           ParentCtl3D = False
-          TabOrder = 4
+          TabOrder = 1
           Text = 'C:\'
         end
         object NxButton2: TNxButton
@@ -553,20 +535,8 @@ object frmIntegracao: TfrmIntegracao
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 6
-          OnClick = btnFecharClick
-        end
-        object NxDatePicker6: TNxDatePicker
-          Left = 509
-          Top = 28
-          Width = 110
-          Height = 21
           TabOrder = 3
-          Text = '17/07/2016'
-          HideFocus = False
-          Date = 42568.000000000000000000
-          NoneCaption = 'None'
-          TodayCaption = 'Today'
+          OnClick = btnFecharClick
         end
         object RzGroupBox2: TRzGroupBox
           Left = 649
@@ -587,7 +557,7 @@ object frmIntegracao: TfrmIntegracao
           Font.Style = []
           ParentCtl3D = False
           ParentFont = False
-          TabOrder = 7
+          TabOrder = 4
           VisualStyle = vsGradient
           object Label17: TLabel
             Left = 31
@@ -624,11 +594,85 @@ object frmIntegracao: TfrmIntegracao
           ItemHeight = 13
           ItemIndex = 0
           ParentFont = False
-          TabOrder = 8
+          TabOrder = 5
           Text = '0=C'#225'lculo de PIS COFINS '#233' conforme vem na nfse'
           Items.Strings = (
             '0=C'#225'lculo de PIS COFINS '#233' conforme vem na nfse'
             '1=Autom'#225'tico')
+        end
+        object Edit3: TEdit
+          Left = 906
+          Top = 62
+          Width = 121
+          Height = 21
+          MaxLength = 4
+          TabOrder = 6
+          Text = '5949'
+        end
+        object dateInicial: TDateEdit
+          Left = 146
+          Top = 28
+          Width = 116
+          Height = 21
+          NumGlyphs = 2
+          TabOrder = 7
+        end
+      end
+      object dateFinal: TDateEdit
+        Left = 316
+        Top = 28
+        Width = 118
+        Height = 21
+        NumGlyphs = 2
+        TabOrder = 1
+      end
+      object dateGeracao: TDateEdit
+        Left = 500
+        Top = 28
+        Width = 118
+        Height = 21
+        NumGlyphs = 2
+        TabOrder = 2
+      end
+      object Panel4: TPanel
+        Left = 0
+        Top = 110
+        Width = 1035
+        Height = 81
+        Align = alTop
+        Color = 13948116
+        TabOrder = 3
+        object Label19: TLabel
+          Left = 144
+          Top = 19
+          Width = 131
+          Height = 13
+          Caption = 'Processando Notas Fiscais:'
+        end
+        object RzProgressBar3: TRzProgressBar
+          Left = 279
+          Top = 8
+          Width = 569
+          BorderOuter = fsFlat
+          BorderWidth = 0
+          InteriorOffset = 0
+          PartsComplete = 0
+          Percent = 0
+          TotalParts = 0
+        end
+        object Label22: TLabel
+          Left = 328
+          Top = 36
+          Width = 387
+          Height = 32
+          Caption = 'Arquivo gerado com sucesso'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlue
+          Font.Height = -27
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          Visible = False
         end
       end
     end
