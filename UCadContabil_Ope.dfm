@@ -22,7 +22,7 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
     Left = 0
     Top = 0
     Width = 845
-    Height = 520
+    Height = 519
     ActivePage = TS_Cadastro
     ActivePageDefault = TS_Consulta
     Align = alClient
@@ -41,7 +41,7 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
         Left = 0
         Top = 78
         Width = 841
-        Height = 402
+        Height = 401
         Align = alClient
         Ctl3D = False
         DataSource = DMCadContabil_Ope.dsConsulta
@@ -319,7 +319,7 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
       end
       object StaticText1: TStaticText
         Left = 0
-        Top = 480
+        Top = 479
         Width = 841
         Height = 17
         Align = alBottom
@@ -768,7 +768,7 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
         Left = 0
         Top = 144
         Width = 841
-        Height = 353
+        Height = 352
         Align = alClient
         DataSource = DMCadContabil_Ope.dsContabil_Ope_Lacto
         Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]

@@ -409,6 +409,8 @@ type
     cdsItensID_CSTICMS: TIntegerField;
     cdsItensUNIDADE: TStringField;
     cdsItensVLR_FRETE: TFloatField;
+    cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CRE: TIntegerField;
+    cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CPA: TIntegerField;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }

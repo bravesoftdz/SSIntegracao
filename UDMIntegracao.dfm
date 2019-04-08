@@ -352,30 +352,33 @@ object DMIntegracao: TDMIntegracao
     NoMetadata = True
     GetMetadata = False
     CommandText = 
-      'SELECT D.ID, D.id_pessoa, D.filial, D.id_conta, d.id_conta_orcam' +
-      'ento,'#13#10'H.dtlancamento, H.vlr_pagamento, H.vlr_jurospagos, d.numd' +
-      'uplicata, d.parcela,'#13#10'CT.cod_contabil COD_CONTABIL_CONTAS, ORC.c' +
-      'od_contabil COD_CONTABIL_ORC,'#13#10'P.cod_contabil_cliente, P.cod_con' +
-      'tabil_fornecedor, D.tipo_es,'#13#10'FC.cod_contabil_juros_pagos, FC.co' +
-      'd_contabil_juros_rec, D.tipo_mov,'#13#10'd.numnota, p.nome NOME_PESSOA' +
-      ', FC.id_contabil_ope_baixa_cre,'#13#10'FC.id_contabil_ope_baixa_cpa, f' +
-      'c.cod_contabil_desc_cre, fc.cod_contabil_desc_cpa,'#13#10'fc.cod_conta' +
-      'bil_multa_cre, fc.cod_contabil_multa_cpa, D.numcheque, D.serie,'#13 +
-      #10'd.dtvencimento, d.dtemissao, h.vlr_multa, h.vlr_descontos, d.vl' +
-      'r_parcela, d.descricao,'#13#10' d.mes_ref, d.ano_ref,'#13#10'case'#13#10'  when d.' +
-      'id_contabil_ope_baixa > 0 and d.tipo_es = '#39'E'#39' then d.id_contabil' +
-      '_ope_baixa'#13#10'  when coalesce(d.id_contabil_ope_baixa,0) <= 0 and ' +
-      'd.tipo_es = '#39'E'#39' then fc.id_contabil_ope_baixa_cre'#13#10'  when d.id_c' +
-      'ontabil_ope_baixa > 0 and d.tipo_es = '#39'S'#39' then d.id_contabil_ope' +
-      '_baixa'#13#10'  when coalesce(d.id_contabil_ope_baixa,0) <= 0 and d.ti' +
-      'po_es = '#39'S'#39' then fc.id_contabil_ope_baixa_cpa'#13#10'  end id_contabil' +
-      '_ope_baixa'#13#10#13#10'FROM DUPLICATA D'#13#10'INNER JOIN DUPLICATA_HIST H'#13#10'ON ' +
-      'D.id = H.ID'#13#10'INNER JOIN PESSOA P'#13#10'ON D.id_pessoa = P.codigo'#13#10'INN' +
-      'ER JOIN FILIAL F'#13#10'ON D.filial = F.ID'#13#10'LEFT JOIN FILIAL_CONTABIL ' +
-      'FC'#13#10'ON D.FILIAL = FC.ID'#13#10'LEFT JOIN CONTAS CT'#13#10'ON D.ID_CONTA = CT' +
-      '.ID'#13#10'LEFT JOIN conta_orcamento ORC'#13#10'ON D.id_conta_orcamento = OR' +
-      'C.id'#13#10'WHERE H.dtlancamento between :DTINICIAL and :DTFINAL'#13#10'  an' +
-      'd D.FILIAL = :FILIAL'#13#10'  and h.tipo_historico = '#39'PAG'#39#13#10
+      'select D.ID, D.ID_PESSOA, D.FILIAL, D.ID_CONTA, D.ID_CONTA_ORCAM' +
+      'ENTO, H.DTLANCAMENTO, H.VLR_PAGAMENTO, H.VLR_JUROSPAGOS,'#13#10'      ' +
+      ' D.NUMDUPLICATA, D.PARCELA, CT.COD_CONTABIL COD_CONTABIL_CONTAS,' +
+      ' ORC.COD_CONTABIL COD_CONTABIL_ORC,'#13#10'       P.COD_CONTABIL_CLIEN' +
+      'TE, P.COD_CONTABIL_FORNECEDOR, D.TIPO_ES, FC.COD_CONTABIL_JUROS_' +
+      'PAGOS,'#13#10'       FC.COD_CONTABIL_JUROS_REC, D.TIPO_MOV, D.NUMNOTA,' +
+      ' P.NOME NOME_PESSOA, FC.ID_CONTABIL_OPE_BAIXA_CRE,'#13#10'       FC.ID' +
+      '_CONTABIL_OPE_BAIXA_CPA, FC.COD_CONTABIL_DESC_CRE, FC.COD_CONTAB' +
+      'IL_DESC_CPA, FC.COD_CONTABIL_MULTA_CRE,'#13#10'       FC.COD_CONTABIL_' +
+      'MULTA_CPA, D.NUMCHEQUE, D.SERIE, D.DTVENCIMENTO, D.DTEMISSAO, H.' +
+      'VLR_MULTA, H.VLR_DESCONTOS,'#13#10'       D.VLR_PARCELA, D.DESCRICAO, ' +
+      'D.MES_REF, D.ANO_REF,FC.COD_CONTABIL_TXBANCARIA_CRE, FC.COD_CONT' +
+      'ABIL_TXBANCARIA_CPA,'#13#10'       case'#13#10'         when D.ID_CONTABIL_O' +
+      'PE_BAIXA > 0 and D.TIPO_ES = '#39'E'#39' then D.ID_CONTABIL_OPE_BAIXA'#13#10' ' +
+      '        when coalesce(D.ID_CONTABIL_OPE_BAIXA, 0) <= 0 and D.TIP' +
+      'O_ES = '#39'E'#39' then FC.ID_CONTABIL_OPE_BAIXA_CRE'#13#10'         when D.ID' +
+      '_CONTABIL_OPE_BAIXA > 0 and D.TIPO_ES = '#39'S'#39' then D.ID_CONTABIL_O' +
+      'PE_BAIXA'#13#10'         when coalesce(D.ID_CONTABIL_OPE_BAIXA, 0) <= ' +
+      '0 and D.TIPO_ES = '#39'S'#39' then FC.ID_CONTABIL_OPE_BAIXA_CPA'#13#10'       ' +
+      'end ID_CONTABIL_OPE_BAIXA'#13#10#13#10'from DUPLICATA D'#13#10'inner join DUPLIC' +
+      'ATA_HIST H on D.ID = H.ID'#13#10'inner join PESSOA P on D.ID_PESSOA = ' +
+      'P.CODIGO'#13#10'inner join FILIAL F on D.FILIAL = F.ID'#13#10'left join FILI' +
+      'AL_CONTABIL FC on D.FILIAL = FC.ID'#13#10'left join CONTAS CT on D.ID_' +
+      'CONTA = CT.ID'#13#10'left join CONTA_ORCAMENTO ORC on D.ID_CONTA_ORCAM' +
+      'ENTO = ORC.ID'#13#10'where H.DTLANCAMENTO between :DTINICIAL and :DTFI' +
+      'NAL and'#13#10'      D.FILIAL = :FILIAL and'#13#10'      H.TIPO_HISTORICO = ' +
+      #39'PAG'#39'   '
     MaxBlobSize = -1
     Params = <
       item
@@ -525,6 +528,12 @@ object DMIntegracao: TDMIntegracao
     end
     object cdsTitulos_PagosANO_REF: TIntegerField
       FieldName = 'ANO_REF'
+    end
+    object cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CRE: TIntegerField
+      FieldName = 'COD_CONTABIL_TXBANCARIA_CRE'
+    end
+    object cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CPA: TIntegerField
+      FieldName = 'COD_CONTABIL_TXBANCARIA_CPA'
     end
   end
   object sdsFilial_Contabil: TSQLDataSet

@@ -23,10 +23,10 @@ object frmIntegracao: TfrmIntegracao
     Top = 0
     Width = 1039
     Height = 612
-    ActivePage = TS_NotaEnt
+    ActivePage = TS_Geracao
     ActivePageDefault = TS_Geracao
     Align = alClient
-    TabIndex = 2
+    TabIndex = 1
     TabOrder = 0
     FixedDimension = 19
     object TS_Menu: TRzTabSheet

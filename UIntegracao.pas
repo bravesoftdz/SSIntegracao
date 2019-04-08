@@ -631,6 +631,8 @@ begin
       8 : vCod_Debito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_DESC_CPA.AsInteger;
       9 : vCod_Debito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_MULTA_CRE.AsInteger;
      10 : vCod_Debito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_MULTA_CPA.AsInteger;
+     11 : vCod_Debito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CRE.AsInteger;
+     12 : vCod_Debito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CPA.AsInteger;
     end;
     if (fDMIntegracao.cdsContabil_Ope_LactoCONTA_DEBITO.AsInteger > 0) and (vCod_Debito <= 0) then
       prc_gravar_mErro('Título ' + fDMIntegracao.cdsTitulos_PagosNUMDUPLICATA.AsString + '/' + fDMIntegracao.cdsTitulos_PagosPARCELA.AsString + ' sem conta contabil (' + vContasAux[fDMIntegracao.cdsContabil_Ope_LactoCONTA_DEBITO.AsInteger] + ') no lançamento debito' );
@@ -645,6 +647,8 @@ begin
       8 : vCod_Credito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_DESC_CPA.AsInteger;
       9 : vCod_Credito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_MULTA_CRE.AsInteger;
      10 : vCod_Credito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_MULTA_CPA.AsInteger;
+     11 : vCod_Credito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CRE.AsInteger;
+     12 : vCod_Credito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CPA.AsInteger;
     end;
     if (fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger > 0) and (vCod_Credito <= 0) then
       prc_gravar_mErro('Título ' + fDMIntegracao.cdsTitulos_PagosNUMDUPLICATA.AsString + '/' + fDMIntegracao.cdsTitulos_PagosPARCELA.AsString + ' sem conta contabil (' + vContasAux[fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger] + ') no lançamento crédito' );
