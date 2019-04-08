@@ -1,6 +1,6 @@
 object frmIntegracao: TfrmIntegracao
-  Left = 179
-  Top = 78
+  Left = 287
+  Top = 33
   Width = 1055
   Height = 651
   BorderIcons = [biSystemMenu]
@@ -499,6 +499,7 @@ object frmIntegracao: TfrmIntegracao
           Width = 120
           Height = 34
           Caption = 'Gerar Arquivo'
+          Default = True
           Down = True
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -607,7 +608,7 @@ object frmIntegracao: TfrmIntegracao
           Height = 21
           MaxLength = 4
           TabOrder = 6
-          Text = '5949'
+          Text = '1102'
         end
         object dateInicial: TDateEdit
           Left = 146

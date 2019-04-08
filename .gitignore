@@ -1,3 +1,5 @@
 *.~ddp
 *.~dfm
 *.~pas
+*.~dfm
+UIntegracao.~pas

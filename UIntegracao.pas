@@ -880,7 +880,7 @@ begin
   texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorBAIRRO.AsString,1,20),20);        //Bairro   Tamanho 20 - 142 a 161
   texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorCIDADE.AsString,1,20),20);        //Cidade   Tamanho 20 - 162 a 181
   texto1 := texto1 + Monta_Numero(fDMIntegracao.qFornecedorCEP.AsString,8);                         //CEP   Tamanho 8 - 182 a 189
-  texto1 := texto1 + Monta_Numero(copy(SQLLocate('CIDADE','ID','CODMUNICIPIO',fDMIntegracao.qFornecedorID_CIDADE.AsString),1,4),4);      //Código Municipio SIAFI   Tamanho 4 - 190 a 193
+  texto1 := texto1 + Monta_Numero('0',4);                                                           //Código Municipio SIAFI   Tamanho 4 - 190 a 193
   texto1 := texto1 + Monta_Numero(fDMIntegracao.qFornecedorDDDFONE1.AsString,3);                         //DDD    Tamanho 3 - 194 a 196
   texto1 := texto1 + Monta_Numero(copy(trim(fDMIntegracao.qFornecedorTELEFONE1.AsString),1,10),10);      //Fone   Tamanho 10 - 197 a 206
   texto1 := texto1 + Monta_Numero('',6);                                                    //Conta Cliente   Tamanho 6 - 207 a 212
