@@ -91,6 +91,7 @@ type
     vRegistro : String;
     vArquivo : String;
     vVlrContabil : Real;
+    vCont_Hist : Integer;
 
     procedure prc_Consultar_Titulos_Pagos;
     procedure prc_Gravar_mAuxiliar(Tipo_Lanc : String); //L=Lancamento  J=Juros
@@ -427,7 +428,10 @@ begin
 
   Writeln(vArqTxt,Texto1);
 
-  if trim(vHistorico) <> '' then
+  //06/08/2019
+  //if trim(vHistorico) <> '' then
+  vCont_Hist := 0;
+  while (trim(vHistorico) <> '') and (vCont_Hist <= 3)  do
     prc_Gravar_Historico_H;
 end;
 
@@ -445,6 +449,8 @@ begin
   for i := 1 to 50 - Length(texto2) do
     texto2 := texto2 + ' ';
   texto1 := texto1 + texto2;
+  //06/08/2019
+  delete(vHistorico,1,50);
 
   //Reservado - 51 ao 95
   for i := 1 to 44 do
@@ -454,6 +460,8 @@ begin
   vContador := vContador + 1;
   texto1 := texto1 + FormatFloat('00000',vContador);
   Writeln(vArqTxt,Texto1);
+
+  vCont_Hist := vCont_Hist + 1;
 end;
 
 procedure TfrmIntegracao.prc_Gravar_mAuxiliar(Tipo_Lanc : String); //L=Lancamento  J=Juros
@@ -631,6 +639,8 @@ begin
       8 : vCod_Debito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_DESC_CPA.AsInteger;
       9 : vCod_Debito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_MULTA_CRE.AsInteger;
      10 : vCod_Debito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_MULTA_CPA.AsInteger;
+     11 : vCod_Debito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CRE.AsInteger;
+     12 : vCod_Debito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CPA.AsInteger;
     end;
     if (fDMIntegracao.cdsContabil_Ope_LactoCONTA_DEBITO.AsInteger > 0) and (vCod_Debito <= 0) then
       prc_gravar_mErro('Título ' + fDMIntegracao.cdsTitulos_PagosNUMDUPLICATA.AsString + '/' + fDMIntegracao.cdsTitulos_PagosPARCELA.AsString + ' sem conta contabil (' + vContasAux[fDMIntegracao.cdsContabil_Ope_LactoCONTA_DEBITO.AsInteger] + ') no lançamento debito' );
@@ -645,6 +655,8 @@ begin
       8 : vCod_Credito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_DESC_CPA.AsInteger;
       9 : vCod_Credito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_MULTA_CRE.AsInteger;
      10 : vCod_Credito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_MULTA_CPA.AsInteger;
+     11 : vCod_Credito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CRE.AsInteger;
+     12 : vCod_Credito := fDMIntegracao.cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CPA.AsInteger;
     end;
     if (fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger > 0) and (vCod_Credito <= 0) then
       prc_gravar_mErro('Título ' + fDMIntegracao.cdsTitulos_PagosNUMDUPLICATA.AsString + '/' + fDMIntegracao.cdsTitulos_PagosPARCELA.AsString + ' sem conta contabil (' + vContasAux[fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger] + ') no lançamento crédito' );
@@ -696,7 +708,9 @@ begin
     vTexto := Replace2(vTexto,'<DESCRICAO_OBS>',fDMIntegracao.cdsTitulos_PagosDESCRICAO.AsString);
   if (posex('<MES_ANO_COMP>',vTexto) > 0) then
     vTexto := Replace2(vTexto,'<MES_ANO_COMP>',fDMIntegracao.cdsTitulos_PagosMES_REF.AsString + '/' + fDMIntegracao.cdsTitulos_PagosANO_REF.AsString);
-
+  //06/08/2019
+  if (posex('<HIST_DUPLICATA>',vTexto) > 0) then
+    vTexto := Replace2(vTexto,'<HIST_DUPLICATA>',fDMIntegracao.cdsTitulos_PagosHIST_DUPLICATA.AsString);
   Result := vTexto;
 end;
 
@@ -880,7 +894,7 @@ begin
   texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorBAIRRO.AsString,1,20),20);        //Bairro   Tamanho 20 - 142 a 161
   texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.qFornecedorCIDADE.AsString,1,20),20);        //Cidade   Tamanho 20 - 162 a 181
   texto1 := texto1 + Monta_Numero(fDMIntegracao.qFornecedorCEP.AsString,8);                         //CEP   Tamanho 8 - 182 a 189
-  texto1 := texto1 + Monta_Numero(copy(SQLLocate('CIDADE','ID','CODMUNICIPIO',fDMIntegracao.qFornecedorID_CIDADE.AsString),1,4),4);      //Código Municipio SIAFI   Tamanho 4 - 190 a 193
+  texto1 := texto1 + Monta_Numero('0',4);                                                           //Código Municipio SIAFI   Tamanho 4 - 190 a 193
   texto1 := texto1 + Monta_Numero(fDMIntegracao.qFornecedorDDDFONE1.AsString,3);                         //DDD    Tamanho 3 - 194 a 196
   texto1 := texto1 + Monta_Numero(copy(trim(fDMIntegracao.qFornecedorTELEFONE1.AsString),1,10),10);      //Fone   Tamanho 10 - 197 a 206
   texto1 := texto1 + Monta_Numero('',6);                                                    //Conta Cliente   Tamanho 6 - 207 a 212
@@ -1196,10 +1210,7 @@ var
 begin
   Texto1 := '5';                                                                                       //Tipo Registro   Tamanho 1 - 1 a 1
   Texto1 := Texto1 + Monta_Numero('0',12);                                                             //Valor Mercadorias   Tamanho 12 - 2 a 13
-  if trim(fDMFolha.mAuxiliarVlr_Desconto.AsString) <> '' then
-    Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',fDMFolha.mAuxiliarVlr_Desconto.AsFloat),12)     //Desconto   Tamanho 12 - 14 a 25
-  else
-    Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);
+  Texto1 := texto1 + Monta_Numero(FormatFloat('0.00',0),12);                                           //Desconto   Tamanho 12 - 14 a 25
   Texto1 := Texto1 + Monta_Numero('0',12);                                                             //Frete   Tamanho 12 - 26 a 37
   Texto1 := Texto1 + Monta_Numero('0',12);                                                             //Despesas   Tamanho 12 - 38 a 49
   Texto1 := Texto1 + Monta_Numero('0',12);                                                             //Seguro   Tamanho 12 - 50 a 61

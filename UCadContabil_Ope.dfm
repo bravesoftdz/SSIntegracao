@@ -21,8 +21,8 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
   object RZPageControl1: TRzPageControl
     Left = 0
     Top = 0
-    Width = 845
-    Height = 519
+    Width = 853
+    Height = 527
     ActivePage = TS_Cadastro
     ActivePageDefault = TS_Consulta
     Align = alClient
@@ -40,8 +40,8 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
       object SMDBGrid1: TSMDBGrid
         Left = 0
         Top = 78
-        Width = 841
-        Height = 401
+        Width = 849
+        Height = 409
         Align = alClient
         Ctl3D = False
         DataSource = DMCadContabil_Ope.dsConsulta
@@ -91,7 +91,7 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
       object Panel2: TPanel
         Left = 0
         Top = 0
-        Width = 841
+        Width = 849
         Height = 32
         Align = alTop
         Color = clSilver
@@ -319,8 +319,8 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
       end
       object StaticText1: TStaticText
         Left = 0
-        Top = 479
-        Width = 841
+        Top = 487
+        Width = 849
         Height = 17
         Align = alBottom
         BorderStyle = sbsSunken
@@ -336,7 +336,7 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
       object pnlPesquisa: TPanel
         Left = 0
         Top = 32
-        Width = 841
+        Width = 849
         Height = 46
         Align = alTop
         Color = clSilver
@@ -436,7 +436,7 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
       object Panel1: TPanel
         Left = 0
         Top = 0
-        Width = 841
+        Width = 849
         Height = 35
         Align = alTop
         Color = 8404992
@@ -662,7 +662,7 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
       object pnlCadastro: TPanel
         Left = 0
         Top = 35
-        Width = 841
+        Width = 849
         Height = 78
         Align = alTop
         Enabled = False
@@ -710,7 +710,7 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
       object Panel4: TPanel
         Left = 0
         Top = 113
-        Width = 841
+        Width = 849
         Height = 31
         Align = alTop
         Color = clSilver
@@ -767,8 +767,8 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
       object SMDBGrid2: TSMDBGrid
         Left = 0
         Top = 144
-        Width = 841
-        Height = 352
+        Width = 849
+        Height = 360
         Align = alClient
         DataSource = DMCadContabil_Ope.dsContabil_Ope_Lacto
         Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgConfirmDelete, dgCancelOnExit]

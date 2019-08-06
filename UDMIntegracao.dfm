@@ -371,14 +371,14 @@ object DMIntegracao: TDMIntegracao
       '_CONTABIL_OPE_BAIXA > 0 and D.TIPO_ES = '#39'S'#39' then D.ID_CONTABIL_O' +
       'PE_BAIXA'#13#10'         when coalesce(D.ID_CONTABIL_OPE_BAIXA, 0) <= ' +
       '0 and D.TIPO_ES = '#39'S'#39' then FC.ID_CONTABIL_OPE_BAIXA_CPA'#13#10'       ' +
-      'end ID_CONTABIL_OPE_BAIXA'#13#10#13#10'from DUPLICATA D'#13#10'inner join DUPLIC' +
-      'ATA_HIST H on D.ID = H.ID'#13#10'inner join PESSOA P on D.ID_PESSOA = ' +
-      'P.CODIGO'#13#10'inner join FILIAL F on D.FILIAL = F.ID'#13#10'left join FILI' +
-      'AL_CONTABIL FC on D.FILIAL = FC.ID'#13#10'left join CONTAS CT on D.ID_' +
-      'CONTA = CT.ID'#13#10'left join CONTA_ORCAMENTO ORC on D.ID_CONTA_ORCAM' +
-      'ENTO = ORC.ID'#13#10'where H.DTLANCAMENTO between :DTINICIAL and :DTFI' +
-      'NAL and'#13#10'      D.FILIAL = :FILIAL and'#13#10'      H.TIPO_HISTORICO = ' +
-      #39'PAG'#39'   '
+      'end ID_CONTABIL_OPE_BAIXA, substring(H.complemento from 1 for 15' +
+      '0) HIST_DUPLICATA'#13#10#13#10'from DUPLICATA D'#13#10'inner join DUPLICATA_HIST' +
+      ' H on D.ID = H.ID'#13#10'inner join PESSOA P on D.ID_PESSOA = P.CODIGO' +
+      #13#10'inner join FILIAL F on D.FILIAL = F.ID'#13#10'left join FILIAL_CONTA' +
+      'BIL FC on D.FILIAL = FC.ID'#13#10'left join CONTAS CT on D.ID_CONTA = ' +
+      'CT.ID'#13#10'left join CONTA_ORCAMENTO ORC on D.ID_CONTA_ORCAMENTO = O' +
+      'RC.ID'#13#10'where H.DTLANCAMENTO between :DTINICIAL and :DTFINAL and'#13 +
+      #10'      D.FILIAL = :FILIAL and'#13#10'      H.TIPO_HISTORICO = '#39'PAG'#39'   '
     MaxBlobSize = -1
     Params = <
       item
@@ -410,7 +410,7 @@ object DMIntegracao: TDMIntegracao
     Params = <>
     ProviderName = 'dspTitulos_Pagos'
     Left = 816
-    Top = 184
+    Top = 183
     object cdsTitulos_PagosID: TIntegerField
       FieldName = 'ID'
       Required = True
@@ -534,6 +534,10 @@ object DMIntegracao: TDMIntegracao
     end
     object cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CPA: TIntegerField
       FieldName = 'COD_CONTABIL_TXBANCARIA_CPA'
+    end
+    object cdsTitulos_PagosHIST_DUPLICATA: TStringField
+      FieldName = 'HIST_DUPLICATA'
+      Size = 250
     end
   end
   object sdsFilial_Contabil: TSQLDataSet

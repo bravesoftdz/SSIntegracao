@@ -91,6 +91,7 @@ type
     vRegistro : String;
     vArquivo : String;
     vVlrContabil : Real;
+    vCont_Hist : Integer;
 
     procedure prc_Consultar_Titulos_Pagos;
     procedure prc_Gravar_mAuxiliar(Tipo_Lanc : String); //L=Lancamento  J=Juros
@@ -427,7 +428,10 @@ begin
 
   Writeln(vArqTxt,Texto1);
 
-  if trim(vHistorico) <> '' then
+  //06/08/2019
+  //if trim(vHistorico) <> '' then
+  vCont_Hist := 0;
+  while (trim(vHistorico) <> '') and (vCont_Hist <= 3)  do
     prc_Gravar_Historico_H;
 end;
 
@@ -445,6 +449,8 @@ begin
   for i := 1 to 50 - Length(texto2) do
     texto2 := texto2 + ' ';
   texto1 := texto1 + texto2;
+  //06/08/2019
+  delete(vHistorico,1,50);
 
   //Reservado - 51 ao 95
   for i := 1 to 44 do
@@ -454,6 +460,8 @@ begin
   vContador := vContador + 1;
   texto1 := texto1 + FormatFloat('00000',vContador);
   Writeln(vArqTxt,Texto1);
+
+  vCont_Hist := vCont_Hist + 1;
 end;
 
 procedure TfrmIntegracao.prc_Gravar_mAuxiliar(Tipo_Lanc : String); //L=Lancamento  J=Juros
@@ -700,7 +708,9 @@ begin
     vTexto := Replace2(vTexto,'<DESCRICAO_OBS>',fDMIntegracao.cdsTitulos_PagosDESCRICAO.AsString);
   if (posex('<MES_ANO_COMP>',vTexto) > 0) then
     vTexto := Replace2(vTexto,'<MES_ANO_COMP>',fDMIntegracao.cdsTitulos_PagosMES_REF.AsString + '/' + fDMIntegracao.cdsTitulos_PagosANO_REF.AsString);
-
+  //06/08/2019
+  if (posex('<HIST_DUPLICATA>',vTexto) > 0) then
+    vTexto := Replace2(vTexto,'<HIST_DUPLICATA>',fDMIntegracao.cdsTitulos_PagosHIST_DUPLICATA.AsString);
   Result := vTexto;
 end;
 

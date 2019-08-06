@@ -252,7 +252,8 @@ object frmCadContabil_Ope_Lacto: TfrmCadContabil_Ope_Lacto
           '<DTVENCIMENTO>'
           '<NUMTITULO>'
           '<DESCRICAO_OBS>'
-          '<MES_ANO_COMP>')
+          '<MES_ANO_COMP>'
+          '<HIST_DUPLICATA>')
       end
       object DBMemo1: TDBMemo
         Left = 12

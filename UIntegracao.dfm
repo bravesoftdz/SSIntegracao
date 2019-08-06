@@ -4,7 +4,7 @@ object frmIntegracao: TfrmIntegracao
   Width = 1055
   Height = 651
   BorderIcons = [biSystemMenu]
-  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.9)'
+  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.10   06/08/2019)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,8 +21,8 @@ object frmIntegracao: TfrmIntegracao
   object RzPageControl1: TRzPageControl
     Left = 0
     Top = 0
-    Width = 1039
-    Height = 612
+    Width = 1047
+    Height = 620
     ActivePage = TS_Geracao
     ActivePageDefault = TS_Geracao
     Align = alClient
@@ -33,7 +33,7 @@ object frmIntegracao: TfrmIntegracao
       Caption = 'Menu'
       object btnOperacoes: TNxButton
         Left = 10
-        Top = 8
+        Top = 7
         Width = 199
         Height = 34
         Caption = 'Cadastro de Opera'#231#245'es'
@@ -67,8 +67,8 @@ object frmIntegracao: TfrmIntegracao
       object gbxVendedor: TRzGroupBox
         Left = 0
         Top = 214
-        Width = 1035
-        Height = 375
+        Width = 1043
+        Height = 383
         Align = alClient
         BorderColor = clNavy
         BorderInner = fsButtonUp
@@ -89,8 +89,8 @@ object frmIntegracao: TfrmIntegracao
         object SMDBGrid1: TSMDBGrid
           Left = 5
           Top = 18
-          Width = 1025
-          Height = 352
+          Width = 1033
+          Height = 360
           Align = alClient
           Ctl3D = False
           DataSource = DMIntegracao.dsmErros
@@ -135,7 +135,7 @@ object frmIntegracao: TfrmIntegracao
       object Panel2: TPanel
         Left = 0
         Top = 110
-        Width = 1035
+        Width = 1043
         Height = 104
         Align = alTop
         Color = 13948116
@@ -194,7 +194,7 @@ object frmIntegracao: TfrmIntegracao
       object Panel1: TPanel
         Left = 0
         Top = 0
-        Width = 1035
+        Width = 1043
         Height = 110
         Align = alTop
         TabOrder = 2
@@ -420,7 +420,7 @@ object frmIntegracao: TfrmIntegracao
       object Panel3: TPanel
         Left = 0
         Top = 0
-        Width = 1035
+        Width = 1043
         Height = 110
         Align = alTop
         TabOrder = 0
@@ -638,7 +638,7 @@ object frmIntegracao: TfrmIntegracao
       object Panel4: TPanel
         Left = 0
         Top = 110
-        Width = 1035
+        Width = 1043
         Height = 81
         Align = alTop
         Color = 13948116

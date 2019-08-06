@@ -411,6 +411,7 @@ type
     cdsItensVLR_FRETE: TFloatField;
     cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CRE: TIntegerField;
     cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CPA: TIntegerField;
+    cdsTitulos_PagosHIST_DUPLICATA: TStringField;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }
