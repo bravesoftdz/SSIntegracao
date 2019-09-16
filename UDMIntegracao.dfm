@@ -397,20 +397,20 @@ object DMIntegracao: TDMIntegracao
         ParamType = ptInput
       end>
     SQLConnection = dmDatabase.scoDados
-    Left = 728
-    Top = 184
+    Left = 731
+    Top = 160
   end
   object dspTitulos_Pagos: TDataSetProvider
     DataSet = sdsTitulos_Pagos
-    Left = 776
-    Top = 184
+    Left = 779
+    Top = 160
   end
   object cdsTitulos_Pagos: TClientDataSet
     Aggregates = <>
     Params = <>
     ProviderName = 'dspTitulos_Pagos'
-    Left = 816
-    Top = 183
+    Left = 819
+    Top = 159
     object cdsTitulos_PagosID: TIntegerField
       FieldName = 'ID'
       Required = True
@@ -729,7 +729,7 @@ object DMIntegracao: TDMIntegracao
     IndexFieldNames = 'Classificacao_Cont'
     Params = <>
     StoreDefs = True
-    Left = 400
+    Left = 402
     Top = 224
     Data = {
       420100009619E0BD010000001800000009000000000003000000420112436C61
@@ -2112,6 +2112,97 @@ object DMIntegracao: TDMIntegracao
     end
     object qFornecedorID_CARTEIRA: TIntegerField
       FieldName = 'ID_CARTEIRA'
+    end
+  end
+  object sdsTransferencia: TSQLDataSet
+    NoMetadata = True
+    GetMetadata = False
+    CommandText = 
+      'select D.ID, D.FILIAL, D.id_conta, D.id_conta_orcamento, D.dtmov' +
+      'imento, D.vlr_movimento,'#13#10'       CT.COD_CONTABIL COD_CONTABIL_CO' +
+      'NTAS, ORC.COD_CONTABIL COD_CONTABIL_ORC,'#13#10'       D.tipo_es, D.hi' +
+      'storico_compl, T.id_contabil_ope, T.numcheque, d.id_transferenci' +
+      'a'#13#10'from FINANCEIRO  D'#13#10'inner join FILIAL F on D.FILIAL = F.ID'#13#10'I' +
+      'NNER JOIN TRANSFERENCIA T'#13#10'ON D.id_transferencia = T.ID'#13#10'left jo' +
+      'in FILIAL_CONTABIL FC on D.FILIAL = FC.ID'#13#10'left join CONTAS CT o' +
+      'n D.ID_CONTA = CT.ID'#13#10'left join CONTA_ORCAMENTO ORC on D.ID_CONT' +
+      'A_ORCAMENTO = ORC.ID'#13#10'where D.dtmovimento between :DTINICIAL and' +
+      ' :DTFINAL and'#13#10'      D.filial = :FILIAL and'#13#10'      coalesce(D.id' +
+      '_transferencia,0) > 0'#13#10#13#10
+    MaxBlobSize = -1
+    Params = <
+      item
+        DataType = ftDate
+        Name = 'DTINICIAL'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftDate
+        Name = 'DTFINAL'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftInteger
+        Name = 'FILIAL'
+        ParamType = ptInput
+      end>
+    SQLConnection = dmDatabase.scoDados
+    Left = 733
+    Top = 212
+  end
+  object dspTransferencia: TDataSetProvider
+    DataSet = sdsTransferencia
+    Left = 779
+    Top = 213
+  end
+  object cdsTransferencia: TClientDataSet
+    Aggregates = <>
+    Params = <>
+    ProviderName = 'dspTransferencia'
+    Left = 819
+    Top = 211
+    object cdsTransferenciaID: TIntegerField
+      FieldName = 'ID'
+      Required = True
+    end
+    object cdsTransferenciaFILIAL: TIntegerField
+      FieldName = 'FILIAL'
+    end
+    object cdsTransferenciaID_CONTA: TIntegerField
+      FieldName = 'ID_CONTA'
+    end
+    object cdsTransferenciaID_CONTA_ORCAMENTO: TIntegerField
+      FieldName = 'ID_CONTA_ORCAMENTO'
+    end
+    object cdsTransferenciaDTMOVIMENTO: TDateField
+      FieldName = 'DTMOVIMENTO'
+    end
+    object cdsTransferenciaVLR_MOVIMENTO: TFloatField
+      FieldName = 'VLR_MOVIMENTO'
+    end
+    object cdsTransferenciaID_TRANSFERENCIA: TIntegerField
+      FieldName = 'ID_TRANSFERENCIA'
+    end
+    object cdsTransferenciaCOD_CONTABIL_CONTAS: TIntegerField
+      FieldName = 'COD_CONTABIL_CONTAS'
+    end
+    object cdsTransferenciaCOD_CONTABIL_ORC: TIntegerField
+      FieldName = 'COD_CONTABIL_ORC'
+    end
+    object cdsTransferenciaTIPO_ES: TStringField
+      FieldName = 'TIPO_ES'
+      FixedChar = True
+      Size = 1
+    end
+    object cdsTransferenciaHISTORICO_COMPL: TStringField
+      FieldName = 'HISTORICO_COMPL'
+      Size = 100
+    end
+    object cdsTransferenciaID_CONTABIL_OPE: TIntegerField
+      FieldName = 'ID_CONTABIL_OPE'
+    end
+    object cdsTransferenciaNUMCHEQUE: TIntegerField
+      FieldName = 'NUMCHEQUE'
     end
   end
 end

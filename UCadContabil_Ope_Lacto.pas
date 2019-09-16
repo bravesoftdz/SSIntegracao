@@ -91,6 +91,8 @@ begin
     9 : fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_DEBITO.AsString := 'Conta Multa (C.Receber)';
    10 : fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_DEBITO.AsString := 'Conta Multa (C.Pagar)';
    11 : fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_DEBITO.AsString := 'Despesa Bancaria';
+   13 : fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_DEBITO.AsString := 'Transferência (Origem)';
+   14 : fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_DEBITO.AsString := 'Transferência (Destino)';
   end;
   fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := '';
   case fDMCadContabil_Ope.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger of
@@ -105,6 +107,8 @@ begin
     9 : fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := 'Conta Multa (C.Receber)';
    10 : fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := 'Conta Multa (C.Pagar)';
    11 : fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := 'Despesa Bancaria';
+   13 : fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := 'Transferência (Origem)';
+   14 : fDMCadContabil_Ope.cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := 'Transferência (Destino)';
   end;
   if fnc_Erro then
     exit;

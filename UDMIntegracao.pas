@@ -412,6 +412,22 @@ type
     cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CRE: TIntegerField;
     cdsTitulos_PagosCOD_CONTABIL_TXBANCARIA_CPA: TIntegerField;
     cdsTitulos_PagosHIST_DUPLICATA: TStringField;
+    sdsTransferencia: TSQLDataSet;
+    dspTransferencia: TDataSetProvider;
+    cdsTransferencia: TClientDataSet;
+    cdsTransferenciaID: TIntegerField;
+    cdsTransferenciaFILIAL: TIntegerField;
+    cdsTransferenciaID_CONTA: TIntegerField;
+    cdsTransferenciaID_CONTA_ORCAMENTO: TIntegerField;
+    cdsTransferenciaDTMOVIMENTO: TDateField;
+    cdsTransferenciaVLR_MOVIMENTO: TFloatField;
+    cdsTransferenciaID_TRANSFERENCIA: TIntegerField;
+    cdsTransferenciaCOD_CONTABIL_CONTAS: TIntegerField;
+    cdsTransferenciaCOD_CONTABIL_ORC: TIntegerField;
+    cdsTransferenciaTIPO_ES: TStringField;
+    cdsTransferenciaHISTORICO_COMPL: TStringField;
+    cdsTransferenciaID_CONTABIL_OPE: TIntegerField;
+    cdsTransferenciaNUMCHEQUE: TIntegerField;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }

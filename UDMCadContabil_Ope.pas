@@ -204,6 +204,8 @@ begin
     9 : cdsContabil_Ope_LactoDESC_CONTA_DEBITO.AsString := 'Conta Multa (C.Receber)';
    10 : cdsContabil_Ope_LactoDESC_CONTA_DEBITO.AsString := 'Conta Multa (C.Pagar)';
    11 : cdsContabil_Ope_LactoDESC_CONTA_DEBITO.AsString := 'Despesa Bancaria';
+   13 : cdsContabil_Ope_LactoDESC_CONTA_DEBITO.AsString := 'Transferência (Origem)';
+   14 : cdsContabil_Ope_LactoDESC_CONTA_DEBITO.AsString := 'Transferência (Destino)';
   end;
   cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := '';
   case cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger of
@@ -218,6 +220,8 @@ begin
     9 : cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := 'Conta Multa (C.Receber)';
    10 : cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := 'Conta Multa (C.Pagar)';
    11 : cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := 'Despesa Bancaria';
+   13 : cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := 'Transferência (Origem)';
+   14 : cdsContabil_Ope_LactoDESC_CONTA_CREDITO.AsString := 'Transferência (Destino)';
   end;
 end;
 

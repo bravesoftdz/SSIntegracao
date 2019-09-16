@@ -4,7 +4,7 @@ object frmIntegracao: TfrmIntegracao
   Width = 1055
   Height = 651
   BorderIcons = [biSystemMenu]
-  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.10   06/08/2019)'
+  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.11   16/09/2019)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -66,9 +66,9 @@ object frmIntegracao: TfrmIntegracao
       Caption = 'Gera'#231#227'o Arq. Cont'#225'bil'
       object gbxVendedor: TRzGroupBox
         Left = 0
-        Top = 214
+        Top = 229
         Width = 1043
-        Height = 383
+        Height = 368
         Align = alClient
         BorderColor = clNavy
         BorderInner = fsButtonUp
@@ -90,7 +90,7 @@ object frmIntegracao: TfrmIntegracao
           Left = 5
           Top = 18
           Width = 1033
-          Height = 360
+          Height = 345
           Align = alClient
           Ctl3D = False
           DataSource = DMIntegracao.dsmErros
@@ -136,15 +136,16 @@ object frmIntegracao: TfrmIntegracao
         Left = 0
         Top = 110
         Width = 1043
-        Height = 104
+        Height = 119
         Align = alTop
         Color = 13948116
         TabOrder = 1
         object Label6: TLabel
           Left = 88
-          Top = 19
+          Top = 18
           Width = 187
           Height = 13
+          Alignment = taRightJustify
           Caption = 'Processando Contas a Receber/Pagar:'
         end
         object RzProgressBar1: TRzProgressBar
@@ -160,14 +161,14 @@ object frmIntegracao: TfrmIntegracao
         end
         object Label7: TLabel
           Left = 153
-          Top = 42
+          Top = 65
           Width = 122
           Height = 13
           Caption = 'Gerando arquivo cont'#225'bil:'
         end
         object RzProgressBar2: TRzProgressBar
           Left = 279
-          Top = 31
+          Top = 54
           Width = 569
           BorderOuter = fsFlat
           BorderWidth = 0
@@ -178,7 +179,7 @@ object frmIntegracao: TfrmIntegracao
         end
         object Label8: TLabel
           Left = 320
-          Top = 64
+          Top = 80
           Width = 387
           Height = 32
           Caption = 'Arquivo gerado com sucesso'
@@ -189,6 +190,25 @@ object frmIntegracao: TfrmIntegracao
           Font.Style = [fsBold]
           ParentFont = False
           Visible = False
+        end
+        object Label21: TLabel
+          Left = 142
+          Top = 41
+          Width = 133
+          Height = 13
+          Alignment = taRightJustify
+          Caption = 'Processando Transfer'#234'ncia:'
+        end
+        object RzProgressBar4: TRzProgressBar
+          Left = 279
+          Top = 31
+          Width = 569
+          BorderOuter = fsFlat
+          BorderWidth = 0
+          InteriorOffset = 0
+          PartsComplete = 0
+          Percent = 0
+          TotalParts = 0
         end
       end
       object Panel1: TPanel
@@ -392,7 +412,7 @@ object frmIntegracao: TfrmIntegracao
             TabOrder = 0
           end
           object Edit1: TEdit
-            Left = 98
+            Left = 99
             Top = 36
             Width = 207
             Height = 19

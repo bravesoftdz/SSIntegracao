@@ -123,7 +123,8 @@ object frmCadContabil_Ope_Lacto: TfrmCadContabil_Ope_Lacto
         'Conta Multa (C.Pagar)'
         'Despesa Banc'#225'ria(C.Receber)'
         'Despesa Banc'#225'ria(C.Pagar)'
-        '')
+        'Transfer'#234'ncia (Origem)'
+        'Transfer'#234'ncia (Destino)')
       TabOrder = 0
       Values.Strings = (
         '0'
@@ -138,7 +139,9 @@ object frmCadContabil_Ope_Lacto: TfrmCadContabil_Ope_Lacto
         '9'
         '10'
         '11'
-        '12')
+        '12'
+        '13'
+        '14')
     end
     object DBEdit1: TDBEdit
       Left = 110
@@ -175,7 +178,9 @@ object frmCadContabil_Ope_Lacto: TfrmCadContabil_Ope_Lacto
         'Conta Multa (C.Receber)'
         'Conta Multa (C.Pagar)'
         'Despesa Banc'#225'ria(C.Receber)'
-        'Despesa Banc'#225'ria(C.Pagar)')
+        'Despesa Banc'#225'ria(C.Pagar)'
+        'Transfer'#234'ncia (Origem)'
+        'Transfer'#234'ncia (Destino)')
       TabOrder = 2
       Values.Strings = (
         '0'
@@ -190,7 +195,9 @@ object frmCadContabil_Ope_Lacto: TfrmCadContabil_Ope_Lacto
         '9'
         '10'
         '11'
-        '12')
+        '12'
+        '13'
+        '14')
     end
     object DBEdit3: TDBEdit
       Left = 110
