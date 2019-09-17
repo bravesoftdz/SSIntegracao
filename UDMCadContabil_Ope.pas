@@ -45,6 +45,8 @@ type
     cdsContabil_Ope_LactoCOD_HISTORICO: TIntegerField;
     cdsContabil_Ope_LactoDESC_CONTA_DEBITO: TStringField;
     cdsContabil_Ope_LactoDESC_CONTA_CREDITO: TStringField;
+    sdsContabil_OpeNAO_GERAR_ARQ: TStringField;
+    cdsContabil_OpeNAO_GERAR_ARQ: TStringField;
     procedure DataModuleCreate(Sender: TObject);
     procedure dspContabil_OpeUpdateError(Sender: TObject;
       DataSet: TCustomClientDataSet; E: EUpdateError;

@@ -4,7 +4,7 @@ object frmIntegracao: TfrmIntegracao
   Width = 1055
   Height = 651
   BorderIcons = [biSystemMenu]
-  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.11   16/09/2019)'
+  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.12   17/09/2019)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -493,7 +493,7 @@ object frmIntegracao: TfrmIntegracao
           Caption = 'C'#225'lculo do Pis/Cofins:'
         end
         object Label18: TLabel
-          Left = 834
+          Left = 833
           Top = 72
           Width = 68
           Height = 13
@@ -515,7 +515,7 @@ object frmIntegracao: TfrmIntegracao
         end
         object btnGerarNotaEnt: TNxButton
           Left = 146
-          Top = 72
+          Top = 71
           Width = 120
           Height = 34
           Caption = 'Gerar Arquivo'

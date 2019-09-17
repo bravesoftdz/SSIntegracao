@@ -23,6 +23,11 @@ object DMCadContabil_Ope: TDMCadContabil_Ope
       FieldName = 'NOME'
       Size = 40
     end
+    object sdsContabil_OpeNAO_GERAR_ARQ: TStringField
+      FieldName = 'NAO_GERAR_ARQ'
+      FixedChar = True
+      Size = 1
+    end
   end
   object sdsContabil_Ope_Lacto: TSQLDataSet
     NoMetadata = True
@@ -101,6 +106,11 @@ object DMCadContabil_Ope: TDMCadContabil_Ope
     end
     object cdsContabil_OpesdsContabil_Ope_Lacto: TDataSetField
       FieldName = 'sdsContabil_Ope_Lacto'
+    end
+    object cdsContabil_OpeNAO_GERAR_ARQ: TStringField
+      FieldName = 'NAO_GERAR_ARQ'
+      FixedChar = True
+      Size = 1
     end
   end
   object cdsContabil_Ope_Lacto: TClientDataSet

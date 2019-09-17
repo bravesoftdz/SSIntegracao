@@ -36,6 +36,7 @@ type
     btnAlterar_Itens: TBitBtn;
     btnExcluir_Itens: TBitBtn;
     SMDBGrid2: TSMDBGrid;
+    DBCheckBox1: TDBCheckBox;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnExcluirClick(Sender: TObject);
     procedure FormShow(Sender: TObject);

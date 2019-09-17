@@ -706,6 +706,18 @@ object frmCadContabil_Ope: TfrmCadContabil_Ope
           DataSource = DMCadContabil_Ope.dsContabil_Ope
           TabOrder = 1
         end
+        object DBCheckBox1: TDBCheckBox
+          Left = 506
+          Top = 55
+          Width = 207
+          Height = 17
+          Caption = 'N'#227'o Gerar Arq. Integra'#231#227'o'
+          DataField = 'NAO_GERAR_ARQ'
+          DataSource = DMCadContabil_Ope.dsContabil_Ope
+          TabOrder = 2
+          ValueChecked = 'S'
+          ValueUnchecked = 'N'
+        end
       end
       object Panel4: TPanel
         Left = 0
