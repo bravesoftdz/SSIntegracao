@@ -428,6 +428,13 @@ type
     cdsTransferenciaHISTORICO_COMPL: TStringField;
     cdsTransferenciaID_CONTABIL_OPE: TIntegerField;
     cdsTransferenciaNUMCHEQUE: TIntegerField;
+    cdsItensPERC_BASE_ICMS_RED: TFloatField;
+    cdsItensID_PIS: TIntegerField;
+    cdsItensID_COFINS: TIntegerField;
+    cdsItensPERC_PIS: TFloatField;
+    cdsItensPERC_COFINS: TFloatField;
+    cdsItensPERC_ICMSSUBST_PROPRIO: TFloatField;
+    cdsItensORIGEM_PROD: TStringField;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }

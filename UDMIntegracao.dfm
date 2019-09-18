@@ -195,7 +195,7 @@ object DMIntegracao: TDMIntegracao
     Params = <>
     ProviderName = 'dspMovimento'
     Left = 152
-    Top = 24
+    Top = 22
   end
   object dsMovimento: TDataSource
     DataSet = cdsMovimento
@@ -967,17 +967,21 @@ object DMIntegracao: TDMIntegracao
       'INSS, 0 BASE_CALCULO, 0 VLR_ISS,'#13#10'             0 VLR_ISS_RETIDO,' +
       ' 0 VLR_IR, 0 VLR_PIS, 0 VLR_COFINS, 0 VLR_CSLL, 0 RETEM_INSS, I.' +
       'VLR_DESCONTO,PERC_IPI,'#13#10'             I.ID_CSTICMS,I.UNIDADE, I.V' +
-      'LR_FRETE'#13#10'      from NOTAFISCAL_ITENS I'#13#10'      where I.ID = :ID'#13 +
-      #10'union'#13#10'      select 0, SI.ID_SERVICO_INT ID_PRODUTO, SI.QTD, SI' +
-      '.VLR_UNITARIO, SI.VLR_TOTAL, 0, 0, 0, 0, 0, 0, '#39'S'#39' TIPO_NS,'#13#10'   ' +
-      '          S.ID ID_NOTA, 0 PERC_ICMS, 0 VLR_ICMS_UF_DEST, 0 VLR_I' +
-      'CMS_UF_REMET, 0 VLR_ICMS_FCP_DEST, SI.BASE_INSS,'#13#10'             S' +
-      'I.VLR_INSS, SI.BASE_CALCULO, SI.VLR_ISS, SI.VLR_ISS_RETIDO, SI.V' +
-      'LR_IR, SI.VLR_PIS, SI.VLR_COFINS,'#13#10'             SI.VLR_CSLL, S.R' +
-      'ETEM_INSS, 0 VLR_DESCONTO,0 PERC_IPI,0 ID_CSTICMS, '#39#39' UNIDADE, 0' +
-      ' VLR_FRETE'#13#10'      from NOTASERVICO S'#13#10'      inner join NOTASERVI' +
-      'CO_ITENS SI on S.ID = SI.ID'#13#10'      where SI.ID = :ID) AUX'#13#10'where' +
-      ' AUX.TIPO_NS = :TIPO_NS'#13#10
+      'LR_FRETE, i.PERC_BASE_ICMS_RED,'#13#10'             I.id_pis, I.id_cof' +
+      'ins, I.perc_pis, I.perc_cofins, I.perc_icmssubst_proprio, I.orig' +
+      'em_prod'#13#10'      from NOTAFISCAL_ITENS I'#13#10'      where I.ID = :ID'#13#10 +
+      'union'#13#10'      select 0, SI.ID_SERVICO_INT ID_PRODUTO, SI.QTD, SI.' +
+      'VLR_UNITARIO, SI.VLR_TOTAL, 0, 0, 0, 0, 0, 0, '#39'S'#39' TIPO_NS,'#13#10'    ' +
+      '         S.ID ID_NOTA, 0 PERC_ICMS, 0 VLR_ICMS_UF_DEST, 0 VLR_IC' +
+      'MS_UF_REMET, 0 VLR_ICMS_FCP_DEST, SI.BASE_INSS,'#13#10'             SI' +
+      '.VLR_INSS, SI.BASE_CALCULO, SI.VLR_ISS, SI.VLR_ISS_RETIDO, SI.VL' +
+      'R_IR, SI.VLR_PIS, SI.VLR_COFINS,'#13#10'             SI.VLR_CSLL, S.RE' +
+      'TEM_INSS, 0 VLR_DESCONTO,0 PERC_IPI,0 ID_CSTICMS, '#39#39' UNIDADE, 0 ' +
+      'VLR_FRETE, 0 PERC_BASE_ICMS_RED,'#13#10'             0 ID_PIS, 0 ID_CO' +
+      'FINS, S.perc_pis, S.perc_cofins, 0 perc_icmssubst_proprio, 9 ori' +
+      'gem_prod'#13#10'      from NOTASERVICO S'#13#10'      inner join NOTASERVICO' +
+      '_ITENS SI on S.ID = SI.ID'#13#10'      where SI.ID = :ID) AUX'#13#10'where A' +
+      'UX.TIPO_NS = :TIPO_NS'#13#10#13#10
     MaxBlobSize = -1
     Params = <
       item
@@ -1009,7 +1013,7 @@ object DMIntegracao: TDMIntegracao
     IndexFieldNames = 'ID_CFOP'
     Params = <>
     ProviderName = 'dspItens'
-    Left = 304
+    Left = 305
     Top = 376
     object cdsItensID_CFOP: TIntegerField
       FieldName = 'ID_CFOP'
@@ -1112,6 +1116,28 @@ object DMIntegracao: TDMIntegracao
     end
     object cdsItensVLR_FRETE: TFloatField
       FieldName = 'VLR_FRETE'
+    end
+    object cdsItensPERC_BASE_ICMS_RED: TFloatField
+      FieldName = 'PERC_BASE_ICMS_RED'
+    end
+    object cdsItensID_PIS: TIntegerField
+      FieldName = 'ID_PIS'
+    end
+    object cdsItensID_COFINS: TIntegerField
+      FieldName = 'ID_COFINS'
+    end
+    object cdsItensPERC_PIS: TFloatField
+      FieldName = 'PERC_PIS'
+    end
+    object cdsItensPERC_COFINS: TFloatField
+      FieldName = 'PERC_COFINS'
+    end
+    object cdsItensPERC_ICMSSUBST_PROPRIO: TFloatField
+      FieldName = 'PERC_ICMSSUBST_PROPRIO'
+    end
+    object cdsItensORIGEM_PROD: TStringField
+      FieldName = 'ORIGEM_PROD'
+      Size = 11
     end
   end
   object dsItens: TDataSource
