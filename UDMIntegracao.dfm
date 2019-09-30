@@ -376,7 +376,7 @@ object DMIntegracao: TDMIntegracao
       'r join DUPLICATA_HIST H on D.ID = H.ID'#13#10'inner join PESSOA P on D' +
       '.ID_PESSOA = P.CODIGO'#13#10'inner join FILIAL F on D.FILIAL = F.ID'#13#10'l' +
       'eft join FILIAL_CONTABIL FC on D.FILIAL = FC.ID'#13#10'left join CONTA' +
-      'S CT on D.ID_CONTA = CT.ID'#13#10'left join CONTA_ORCAMENTO ORC on D.I' +
+      'S CT on H.ID_CONTA = CT.ID'#13#10'left join CONTA_ORCAMENTO ORC on D.I' +
       'D_CONTA_ORCAMENTO = ORC.ID'#13#10'where H.DTLANCAMENTO between :DTINIC' +
       'IAL and :DTFINAL and'#13#10'      D.FILIAL = :FILIAL and'#13#10'      H.TIPO' +
       '_HISTORICO = '#39'PAG'#39'  ) aux'#13#10'left join contabil_ope cope'#13#10'on aux.i' +
@@ -385,17 +385,17 @@ object DMIntegracao: TDMIntegracao
     MaxBlobSize = -1
     Params = <
       item
-        DataType = ftDate
+        DataType = ftUnknown
         Name = 'DTINICIAL'
         ParamType = ptInput
       end
       item
-        DataType = ftDate
+        DataType = ftUnknown
         Name = 'DTFINAL'
         ParamType = ptInput
       end
       item
-        DataType = ftInteger
+        DataType = ftUnknown
         Name = 'FILIAL'
         ParamType = ptInput
       end>
