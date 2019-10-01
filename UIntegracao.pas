@@ -1095,7 +1095,7 @@ begin
   Texto1 := Texto1 + Monta_Numero('',2);                                                 //Variação Natureza Operação (CFOP)   Tamanho 2 - 36 a 37
   Texto1 := Texto1 + Monta_Numero('',2);                                                 //Classificação 1 para integração contabil   Tamanho 2 - 38 a 39
   Texto1 := Texto1 + Monta_Numero('',2);                                                 //Classificação 1 para integração contabil   Tamanho 2 - 40 a 41
-  texto2 := fDMIntegracao.qFornecedorCNPJ_CPF.AsString;                                  //CNPJ/CPF do destinatário   Tamanho 18 - 51 a 68
+  texto2 := fDMIntegracao.qFornecedorCNPJ_CPF.AsString;                                  //CNPJ/CPF do destinatário   Tamanho 18 - 42 a 59
   texto1 := texto1 + Formatar_Campo(texto2,18);
   if fDMIntegracao.cdsNotaVLR_NOTA.AsFloat > 0 then                                    //Valor Contábil   Tamanho 12 - 69 a 80
     Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsNotaVLR_NOTA.AsFloat),12)
