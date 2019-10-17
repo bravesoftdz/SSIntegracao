@@ -890,6 +890,7 @@ begin
   fDMIntegracao.cdsNota.First;
   while not fDMIntegracao.cdsNota.Eof do
   begin
+  
     RzProgressBar3.PartsComplete := RzProgressBar3.PartsComplete + 1;
     prc_Emitente_Destinatario;
     prc_Nota_Fiscal;
@@ -912,7 +913,6 @@ begin
     while not fDMIntegracao.mCFOP.Eof do
     begin
 //      prc_NotasFiscais;
-
 
       fDMIntegracao.mCFOP.Next;
     end;
@@ -1091,7 +1091,9 @@ begin
   Texto1 := Texto1 + Monta_Numero('55',2);                                               //Modelo   Tamanho 2 - 24 a 25
   Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsNotaSERIE.AsString,3);              //Série   Tamanho 3 - 26 a 28
   Texto1 := Texto1 + Formatar_Campo('',3);                                               //Sub-Série   Tamanho 3 - 29 a 31
-  Texto1 := Texto1 + Monta_Numero(Edit3.Text,4);                                         //Natureza Operação (CFOP)   Tamanho 4 - 32 a 35
+  //Alterado 17/10/2019
+  //Texto1 := Texto1 + Monta_Numero(Edit3.Text,4);                                       //Natureza Operação (CFOP)   Tamanho 4 - 32 a 35
+  Texto1 := Texto1 + Monta_Numero(fDMIntegracao.cdsNotaCODCFOP.AsString,4);              //Natureza Operação (CFOP)   Tamanho 4 - 32 a 35
   Texto1 := Texto1 + Monta_Numero('',2);                                                 //Variação Natureza Operação (CFOP)   Tamanho 2 - 36 a 37
   Texto1 := Texto1 + Monta_Numero('',2);                                                 //Classificação 1 para integração contabil   Tamanho 2 - 38 a 39
   Texto1 := Texto1 + Monta_Numero('',2);                                                 //Classificação 1 para integração contabil   Tamanho 2 - 40 a 41

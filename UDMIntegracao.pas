@@ -435,6 +435,7 @@ type
     cdsItensPERC_COFINS: TFloatField;
     cdsItensPERC_ICMSSUBST_PROPRIO: TFloatField;
     cdsItensORIGEM_PROD: TStringField;
+    cdsNotaCODCFOP: TStringField;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }

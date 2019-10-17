@@ -831,18 +831,20 @@ object DMIntegracao: TDMIntegracao
       'LIENTE, N.DTEMISSAO, N.DTSAIDAENTRADA,'#13#10'       coalesce(COND.TIP' +
       'O, '#39'X'#39') TIPO_CONDICAO, coalesce(N.TIPO_FRETE, '#39#39') TIPO_FRETE, '#39'N' +
       #39' TIPO_NS, N.VLR_NOTA VLR_NOTA,'#13#10'       N.VLR_PIS VLR_PIS, N.VLR' +
-      '_COFINS VLR_COFINS, N.BASE_ICMS BASE_ICMS, N.VLR_ICMS VLR_ICMS'#13#10 +
-      #13#10'from NOTAFISCAL N'#13#10'left join CONDPGTO COND on N.ID_CONDPGTO = ' +
-      'COND.ID'#13#10'where N.TIPO_REG = '#39'NTE'#39' and'#13#10'      N.DTSAIDAENTRADA be' +
-      'tween :DATA1 and :DATA2 and'#13#10'      N.FILIAL = :FILIAL'#13#10#13#10'union'#13#10 +
-      #13#10'select NS.ID, NS.TIPO_DOC, NS.TIPO_ES, NS.NUMNOTA, NS.SERIE, N' +
-      'S.ID_CLIENTE, NS.DTEMISSAO_CAD, NS.DTENTRADA,'#13#10'       coalesce(C' +
-      'OND.TIPO, '#39'X'#39') TIPO_CONDICAO, '#39#39' as TIPO_FRETE, '#39'S'#39' TIPO_NS, NS.' +
-      'VLR_TOTAL VLR_NOTA,'#13#10'       NS.VLR_PIS VLR_PIS, NS.VLR_COFINS VL' +
-      'R_COFINS, CAST('#39'0.00'#39' AS FLOAT) BASE_ICMS, NS.VLR_ICMS VLR_ICMS'#13 +
-      #10'from NOTASERVICO NS'#13#10'left join CONDPGTO COND on NS.ID_CONDPGTO ' +
-      '= COND.ID'#13#10'where NS.TIPO_ES = '#39'E'#39' and'#13#10'      NS.DTENTRADA betwee' +
-      'n :DATA1 and :DATA2 and'#13#10'      NS.FILIAL = :FILIAL    '
+      '_COFINS VLR_COFINS, N.BASE_ICMS BASE_ICMS, N.VLR_ICMS VLR_ICMS, ' +
+      'CFOP.CODCFOP'#13#10#13#10'from NOTAFISCAL N'#13#10'left join CONDPGTO COND on N.' +
+      'ID_CONDPGTO = COND.ID'#13#10'LEFT JOIN TAB_CFOP CFOP ON N.id_cfop = CF' +
+      'OP.ID'#13#10'where N.TIPO_REG = '#39'NTE'#39' and'#13#10'      N.DTSAIDAENTRADA betw' +
+      'een :DATA1 and :DATA2 and'#13#10'      N.FILIAL = :FILIAL'#13#10#13#10'union'#13#10#13#10 +
+      'select NS.ID, NS.TIPO_DOC, NS.TIPO_ES, NS.NUMNOTA, NS.SERIE, NS.' +
+      'ID_CLIENTE, NS.DTEMISSAO_CAD, NS.DTENTRADA,'#13#10'       coalesce(CON' +
+      'D.TIPO, '#39'X'#39') TIPO_CONDICAO, '#39#39' as TIPO_FRETE, '#39'S'#39' TIPO_NS, NS.VL' +
+      'R_TOTAL VLR_NOTA,'#13#10'       NS.VLR_PIS VLR_PIS, NS.VLR_COFINS VLR_' +
+      'COFINS, CAST('#39'0.00'#39' AS FLOAT) BASE_ICMS, NS.VLR_ICMS VLR_ICMS,'#13#10 +
+      '       CAST('#39'0'#39' AS INTEGER) CODCFOP'#13#10'from NOTASERVICO NS'#13#10'left j' +
+      'oin CONDPGTO COND on NS.ID_CONDPGTO = COND.ID'#13#10'where NS.TIPO_ES ' +
+      '= '#39'E'#39' and'#13#10'      NS.DTENTRADA between :DATA1 and :DATA2 and'#13#10'   ' +
+      '   NS.FILIAL = :FILIAL'#13#10
     MaxBlobSize = -1
     Params = <
       item
@@ -876,7 +878,7 @@ object DMIntegracao: TDMIntegracao
         ParamType = ptInput
       end>
     SQLConnection = dmDatabase.scoDados
-    Left = 208
+    Left = 209
     Top = 320
   end
   object dspNota: TDataSetProvider
@@ -888,7 +890,7 @@ object DMIntegracao: TDMIntegracao
     Aggregates = <>
     Params = <>
     ProviderName = 'dspNota'
-    Left = 304
+    Left = 305
     Top = 320
     object cdsNotaID: TIntegerField
       FieldName = 'ID'
@@ -948,6 +950,10 @@ object DMIntegracao: TDMIntegracao
     end
     object cdsNotaVLR_ICMS: TFloatField
       FieldName = 'VLR_ICMS'
+    end
+    object cdsNotaCODCFOP: TStringField
+      FieldName = 'CODCFOP'
+      Size = 11
     end
   end
   object dsNota: TDataSource
