@@ -416,16 +416,6 @@ type
     dspTransferencia: TDataSetProvider;
     cdsTransferencia: TClientDataSet;
     cdsTransferenciaID: TIntegerField;
-    cdsTransferenciaFILIAL: TIntegerField;
-    cdsTransferenciaID_CONTA: TIntegerField;
-    cdsTransferenciaID_CONTA_ORCAMENTO: TIntegerField;
-    cdsTransferenciaDTMOVIMENTO: TDateField;
-    cdsTransferenciaVLR_MOVIMENTO: TFloatField;
-    cdsTransferenciaID_TRANSFERENCIA: TIntegerField;
-    cdsTransferenciaCOD_CONTABIL_CONTAS: TIntegerField;
-    cdsTransferenciaCOD_CONTABIL_ORC: TIntegerField;
-    cdsTransferenciaTIPO_ES: TStringField;
-    cdsTransferenciaHISTORICO_COMPL: TStringField;
     cdsTransferenciaID_CONTABIL_OPE: TIntegerField;
     cdsTransferenciaNUMCHEQUE: TIntegerField;
     cdsItensPERC_BASE_ICMS_RED: TFloatField;
@@ -436,6 +426,18 @@ type
     cdsItensPERC_ICMSSUBST_PROPRIO: TFloatField;
     cdsItensORIGEM_PROD: TStringField;
     cdsNotaCODCFOP: TStringField;
+    cdsTransferenciaID_CONTA_ORI: TIntegerField;
+    cdsTransferenciaID_CONTA_DEST: TIntegerField;
+    cdsTransferenciaID_CONTA_ORC_ORIGEM: TIntegerField;
+    cdsTransferenciaID_CONTA_ORC_DESTINO: TIntegerField;
+    cdsTransferenciaDTEMISSAO: TDateField;
+    cdsTransferenciaCOD_CONTABIL_ORI: TIntegerField;
+    cdsTransferenciaNOME_CONTA_ORI: TStringField;
+    cdsTransferenciaNOME_CONTA_DEST: TStringField;
+    cdsTransferenciaCOD_CONTABIL_DEST: TIntegerField;
+    cdsTransferenciaCOD_CONTABIL_CONTAS_ORI: TIntegerField;
+    cdsTransferenciaCOD_CONTABIL_CONTAS_DEST: TIntegerField;
+    cdsTransferenciaVLR_MOVIMENTO: TFloatField;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }

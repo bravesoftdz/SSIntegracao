@@ -2153,17 +2153,17 @@ object DMIntegracao: TDMIntegracao
     NoMetadata = True
     GetMetadata = False
     CommandText = 
-      'select D.ID, D.FILIAL, D.id_conta, D.id_conta_orcamento, D.dtmov' +
-      'imento, D.vlr_movimento,'#13#10'       CT.COD_CONTABIL COD_CONTABIL_CO' +
-      'NTAS, ORC.COD_CONTABIL COD_CONTABIL_ORC,'#13#10'       D.tipo_es, D.hi' +
-      'storico_compl, T.id_contabil_ope, T.numcheque, d.id_transferenci' +
-      'a'#13#10'from FINANCEIRO  D'#13#10'inner join FILIAL F on D.FILIAL = F.ID'#13#10'I' +
-      'NNER JOIN TRANSFERENCIA T'#13#10'ON D.id_transferencia = T.ID'#13#10'left jo' +
-      'in FILIAL_CONTABIL FC on D.FILIAL = FC.ID'#13#10'left join CONTAS CT o' +
-      'n D.ID_CONTA = CT.ID'#13#10'left join CONTA_ORCAMENTO ORC on D.ID_CONT' +
-      'A_ORCAMENTO = ORC.ID'#13#10'where D.dtmovimento between :DTINICIAL and' +
-      ' :DTFINAL and'#13#10'      D.filial = :FILIAL and'#13#10'      coalesce(D.id' +
-      '_transferencia,0) > 0'#13#10#13#10
+      'select T.ID, T.id_conta_ori, T.id_conta_dest, T.id_conta_orc_ori' +
+      'gem,'#13#10'T.id_conta_orc_destino, T.dtemissao, T.VLR_MOVIMENTO,'#13#10'CT.' +
+      'cod_contabil COD_CONTABIL_ORI, CT.NOME NOME_CONTA_ORI,'#13#10'CT2.NOME' +
+      ' NOME_CONTA_DEST, CT2.cod_contabil COD_CONTABIL_DEST,'#13#10'CT.COD_CO' +
+      'NTABIL COD_CONTABIL_CONTAS_ORI, CT2.COD_CONTABIL COD_CONTABIL_CO' +
+      'NTAS_DEST,'#13#10'T.ID_CONTABIL_OPE, T.NUMCHEQUE'#13#10'from TRANSFERENCIA T' +
+      #13#10'left join CONTAS CT on T.id_conta_ori = CT.ID'#13#10'left join CONTA' +
+      'S CT2 on T.id_conta_dest = CT2.ID'#13#10'left join CONTA_ORCAMENTO ORC' +
+      ' on T.id_conta_orc_origem = ORC.ID'#13#10'left join CONTA_ORCAMENTO OR' +
+      'C2 on T.id_conta_orc_destino = ORC2.ID'#13#10'where T.dtemissao betwee' +
+      'n :DTINICIAL and :DTFINAL'
     MaxBlobSize = -1
     Params = <
       item
@@ -2175,14 +2175,9 @@ object DMIntegracao: TDMIntegracao
         DataType = ftDate
         Name = 'DTFINAL'
         ParamType = ptInput
-      end
-      item
-        DataType = ftInteger
-        Name = 'FILIAL'
-        ParamType = ptInput
       end>
     SQLConnection = dmDatabase.scoDados
-    Left = 733
+    Left = 735
     Top = 212
   end
   object dspTransferencia: TDataSetProvider
@@ -2200,44 +2195,49 @@ object DMIntegracao: TDMIntegracao
       FieldName = 'ID'
       Required = True
     end
-    object cdsTransferenciaFILIAL: TIntegerField
-      FieldName = 'FILIAL'
-    end
-    object cdsTransferenciaID_CONTA: TIntegerField
-      FieldName = 'ID_CONTA'
-    end
-    object cdsTransferenciaID_CONTA_ORCAMENTO: TIntegerField
-      FieldName = 'ID_CONTA_ORCAMENTO'
-    end
-    object cdsTransferenciaDTMOVIMENTO: TDateField
-      FieldName = 'DTMOVIMENTO'
-    end
-    object cdsTransferenciaVLR_MOVIMENTO: TFloatField
-      FieldName = 'VLR_MOVIMENTO'
-    end
-    object cdsTransferenciaID_TRANSFERENCIA: TIntegerField
-      FieldName = 'ID_TRANSFERENCIA'
-    end
-    object cdsTransferenciaCOD_CONTABIL_CONTAS: TIntegerField
-      FieldName = 'COD_CONTABIL_CONTAS'
-    end
-    object cdsTransferenciaCOD_CONTABIL_ORC: TIntegerField
-      FieldName = 'COD_CONTABIL_ORC'
-    end
-    object cdsTransferenciaTIPO_ES: TStringField
-      FieldName = 'TIPO_ES'
-      FixedChar = True
-      Size = 1
-    end
-    object cdsTransferenciaHISTORICO_COMPL: TStringField
-      FieldName = 'HISTORICO_COMPL'
-      Size = 100
-    end
     object cdsTransferenciaID_CONTABIL_OPE: TIntegerField
       FieldName = 'ID_CONTABIL_OPE'
     end
     object cdsTransferenciaNUMCHEQUE: TIntegerField
       FieldName = 'NUMCHEQUE'
+    end
+    object cdsTransferenciaID_CONTA_ORI: TIntegerField
+      FieldName = 'ID_CONTA_ORI'
+    end
+    object cdsTransferenciaID_CONTA_DEST: TIntegerField
+      FieldName = 'ID_CONTA_DEST'
+    end
+    object cdsTransferenciaID_CONTA_ORC_ORIGEM: TIntegerField
+      FieldName = 'ID_CONTA_ORC_ORIGEM'
+    end
+    object cdsTransferenciaID_CONTA_ORC_DESTINO: TIntegerField
+      FieldName = 'ID_CONTA_ORC_DESTINO'
+    end
+    object cdsTransferenciaDTEMISSAO: TDateField
+      FieldName = 'DTEMISSAO'
+    end
+    object cdsTransferenciaCOD_CONTABIL_ORI: TIntegerField
+      FieldName = 'COD_CONTABIL_ORI'
+    end
+    object cdsTransferenciaNOME_CONTA_ORI: TStringField
+      FieldName = 'NOME_CONTA_ORI'
+      Size = 30
+    end
+    object cdsTransferenciaNOME_CONTA_DEST: TStringField
+      FieldName = 'NOME_CONTA_DEST'
+      Size = 30
+    end
+    object cdsTransferenciaCOD_CONTABIL_DEST: TIntegerField
+      FieldName = 'COD_CONTABIL_DEST'
+    end
+    object cdsTransferenciaCOD_CONTABIL_CONTAS_ORI: TIntegerField
+      FieldName = 'COD_CONTABIL_CONTAS_ORI'
+    end
+    object cdsTransferenciaCOD_CONTABIL_CONTAS_DEST: TIntegerField
+      FieldName = 'COD_CONTABIL_CONTAS_DEST'
+    end
+    object cdsTransferenciaVLR_MOVIMENTO: TFloatField
+      FieldName = 'VLR_MOVIMENTO'
     end
   end
 end

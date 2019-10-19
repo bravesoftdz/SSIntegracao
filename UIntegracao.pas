@@ -101,7 +101,7 @@ type
     procedure prc_Gravar_mAuxiliar_Novo(Tipo_Lanc : String); //L=Lancamento  J=Juros
     procedure prc_gravar_mErro(Erro : String);
     procedure prc_Le_Contabil_Ope_Lacto(Tipo_ES : String);
-    procedure prc_Le_Contabil_Ope_Lacto_Transf(Tipo_ES : String);
+    procedure prc_Le_Contabil_Ope_Lacto_Transf;
     procedure prc_Montar_DadosComplementares;
 
     procedure prc_Grava_Lote;
@@ -110,7 +110,7 @@ type
 
     procedure prc_Le_cdsNota;
 
-    function fnc_Monta_Hist(Transferencia : Boolean) : String;
+    function fnc_Monta_Hist(Transferencia : Boolean ; Obs : String) : String;
     function fnc_Monta_Vlr(Transferencia : Boolean) : Real;
 
     procedure prc_Header;
@@ -251,7 +251,7 @@ begin
     while not fDMIntegracao.cdsTransferencia.Eof do
     begin
       RzProgressBar4.PartsComplete := RzProgressBar1.PartsComplete + 1;
-      prc_Le_Contabil_Ope_Lacto_Transf(fDMIntegracao.cdsTransferenciaTIPO_ES.AsString);
+      prc_Le_Contabil_Ope_Lacto_Transf;
       fDMIntegracao.cdsTransferencia.Next;
     end;
     //*******************
@@ -685,7 +685,7 @@ begin
     if (fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger > 0) and (vCod_Credito <= 0) then
       prc_gravar_mErro('Título ' + fDMIntegracao.cdsTitulos_PagosNUMDUPLICATA.AsString + '/' + fDMIntegracao.cdsTitulos_PagosPARCELA.AsString + ' sem conta contabil (' + vContasAux[fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger] + ') no lançamento crédito' );
 
-    vHistorico := fnc_Monta_Hist(False);
+    vHistorico := fnc_Monta_Hist(False,'');
     vVlr_Lacto := fnc_Monta_Vlr(False);
     if (StrToFloat(FormatFloat('0.00',vVlr_Lacto)) > 0) then
     begin
@@ -702,7 +702,7 @@ begin
     prc_gravar_mErro('Título ' + fDMIntegracao.cdsTitulos_PagosNUMDUPLICATA.AsString + '/' + fDMIntegracao.cdsTitulos_PagosPARCELA.AsString + ' com diferença de valores para débito e crédito');
 end;
 
-function TfrmIntegracao.fnc_Monta_Hist(Transferencia : Boolean) : String;
+function TfrmIntegracao.fnc_Monta_Hist(Transferencia : Boolean ; Obs : String) : String;
 var
   vTexto : String;
 begin
@@ -710,7 +710,7 @@ begin
   begin
     vTexto := fDMIntegracao.cdsContabil_Ope_LactoHISTORICO.AsString;
     if posex('<NUMNOTA>',vTexto) > 0 then
-      vTexto := Replace2(vTexto,'<NUMNOTA>',fDMIntegracao.cdsTransferenciaID_TRANSFERENCIA.AsString);
+      vTexto := Replace2(vTexto,'<NUMNOTA>',fDMIntegracao.cdsTransferenciaID.AsString);
     if (posex('<NUMCHEQUE>',vTexto) > 0) then
     begin
       if (fDMIntegracao.cdsTransferenciaNUMCHEQUE.AsInteger > 0) then
@@ -719,13 +719,14 @@ begin
         vTexto := Replace2(vTexto,'<NUMCHEQUE>','');
     end;
     if (posex('<NUMTITULO>',vTexto) > 0) then
-      vTexto := Replace2(vTexto,'<NUMTITULO>',fDMIntegracao.cdsTransferenciaID_TRANSFERENCIA.AsString);
+      vTexto := Replace2(vTexto,'<NUMTITULO>',fDMIntegracao.cdsTransferenciaID.AsString);
     if (posex('<DTEMISSAO>',vTexto) > 0) then
-      vTexto := Replace2(vTexto,'<DTEMISSAO>',fDMIntegracao.cdsTransferenciaDTMOVIMENTO.AsString);
+      vTexto := Replace2(vTexto,'<DTEMISSAO>',fDMIntegracao.cdsTransferenciaDTEMISSAO.AsString);
     if (posex('<DESCRICAO_OBS>',vTexto) > 0) then
-      vTexto := Replace2(vTexto,'<DESCRICAO_OBS>',fDMIntegracao.cdsTransferenciaHISTORICO_COMPL.AsString);
+      vTexto := Replace2(vTexto,'<DESCRICAO_OBS>',Obs);
     if (posex('<HIST_DUPLICATA>',vTexto) > 0) then
-      vTexto := Replace2(vTexto,'<HIST_DUPLICATA>',fDMIntegracao.cdsTransferenciaHISTORICO_COMPL.AsString);
+      //vTexto := Replace2(vTexto,'<HIST_DUPLICATA>',fDMIntegracao.cdsTransferenciaHISTORICO_COMPL.AsString);
+      vTexto := Replace2(vTexto,'<HIST_DUPLICATA>','');
   end
   else
   begin
@@ -1354,17 +1355,17 @@ begin
   fDMIntegracao.cdsTransferencia.Close;
   fDMIntegracao.sdsTransferencia.ParamByName('DTINICIAL').AsDate := NxDatePicker1.Date;
   fDMIntegracao.sdsTransferencia.ParamByName('DTFINAL').AsDate   := NxDatePicker2.Date;
-  fDMIntegracao.sdsTransferencia.ParamByName('FILIAL').AsInteger := RxDBLookupCombo1.KeyValue;
   fDMIntegracao.cdsTransferencia.Open;
 end;
 
-procedure TfrmIntegracao.prc_Le_Contabil_Ope_Lacto_Transf(Tipo_ES: String);
+procedure TfrmIntegracao.prc_Le_Contabil_Ope_Lacto_Transf;
 const
   vContasAux : array[1..12] of String = ('Contas','Cliente','Fornecedor','Juros_Pagos','Juros_Rec','Contas de Orçamento','Desconto C.Receber',
                                          'Desconto C.Pagar','Multa C.Receber','Multa C.Pagar','Transferência (Origem)','Transferência (Destino)');
 var
   vVlr_Conferencia_Deb : Real;
   vVlr_Conferencia_Cre : Real;
+  Tipo_Es : String;
 begin
   vVlr_Conferencia_Deb := 0;
   vVlr_Conferencia_Cre := 0;
@@ -1372,7 +1373,7 @@ begin
   fDMIntegracao.sdsContabil_Ope_Lacto.ParamByName('ID').AsInteger := fDMIntegracao.cdsTransferenciaID_CONTABIL_OPE.AsInteger;
   fDMIntegracao.cdsContabil_Ope_Lacto.Open;
   if fDMIntegracao.cdsContabil_Ope_Lacto.IsEmpty then
-    prc_gravar_mErro('Transferência ' + fDMIntegracao.cdsTransferenciaID_TRANSFERENCIA.AsString + ' não gravado a operação contábil!');
+    prc_gravar_mErro('Transferência ' + fDMIntegracao.cdsTransferenciaID.AsString + ' não gravado a operação contábil!');
 
   fDMIntegracao.cdsContabil_Ope_Lacto.First;
   while not fDMIntegracao.cdsContabil_Ope_Lacto.Eof do
@@ -1380,19 +1381,20 @@ begin
     vCod_Debito  := 0;
     vCod_Credito := 0;
     case fDMIntegracao.cdsContabil_Ope_LactoCONTA_DEBITO.AsInteger of
-      13 : vCod_Debito := fDMIntegracao.cdsTransferenciaCOD_CONTABIL_CONTAS.AsInteger;
-      14 : vCod_Debito := fDMIntegracao.cdsTransferenciaCOD_CONTABIL_CONTAS.AsInteger;
+      13 : vCod_Debito := fDMIntegracao.cdsTransferenciaCOD_CONTABIL_CONTAS_ORI.AsInteger;
+      14 : vCod_Debito := fDMIntegracao.cdsTransferenciaCOD_CONTABIL_CONTAS_DEST.AsInteger;
     end;
     if (fDMIntegracao.cdsContabil_Ope_LactoCONTA_DEBITO.AsInteger > 0) and (vCod_Debito <= 0) then
-      prc_gravar_mErro('Transferência ' + fDMIntegracao.cdsTransferenciaID_TRANSFERENCIA.AsString + ' sem conta contabil (' + vContasAux[fDMIntegracao.cdsContabil_Ope_LactoCONTA_DEBITO.AsInteger] + ') no lançamento debito' );
+      prc_gravar_mErro('Transferência ' + fDMIntegracao.cdsTransferenciaID.AsString + ' sem conta contabil (' + vContasAux[fDMIntegracao.cdsContabil_Ope_LactoCONTA_DEBITO.AsInteger] + ') no lançamento debito' );
     case fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger of
-      13 : vCod_Credito := fDMIntegracao.cdsTransferenciaCOD_CONTABIL_CONTAS.AsInteger;
-      14 : vCod_Credito := fDMIntegracao.cdsTransferenciaCOD_CONTABIL_CONTAS.AsInteger;
+      13 : vCod_Credito := fDMIntegracao.cdsTransferenciaCOD_CONTABIL_CONTAS_ORI.AsInteger;
+      14 : vCod_Credito := fDMIntegracao.cdsTransferenciaCOD_CONTABIL_CONTAS_DEST.AsInteger;
     end;
     if (fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger > 0) and (vCod_Credito <= 0) then
-      prc_gravar_mErro('Transferência ' + fDMIntegracao.cdsTransferenciaID_TRANSFERENCIA.AsString + ' sem conta contabil (' + vContasAux[fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger] + ') no lançamento crédito' );
+      prc_gravar_mErro('Transferência ' + fDMIntegracao.cdsTransferenciaID.AsString + ' sem conta contabil (' + vContasAux[fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger] + ') no lançamento crédito' );
 
-    vHistorico := fnc_Monta_Hist(True);
+    vHistorico := fnc_Monta_Hist(True,'Transferência de ' + fDMIntegracao.cdsTransferenciaNOME_CONTA_ORI.AsString + ' para '
+                + fDMIntegracao.cdsTransferenciaNOME_CONTA_DEST.AsString);
     vVlr_Lacto := fnc_Monta_Vlr(True);
     if (StrToFloat(FormatFloat('0.00',vVlr_Lacto)) > 0) then
     begin
