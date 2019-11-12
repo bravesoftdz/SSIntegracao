@@ -14,7 +14,8 @@ uses
   logprovider in '..\logs\src\logprovider.pas',
   LogTypes in '..\logs\src\LogTypes.pas',
   UConvPlanoContas in 'UConvPlanoContas.pas' {frmConvPlanoContas},
-  DmdDatabase_NFeBD in '..\ssfacil\DmdDatabase_NFeBD.pas' {dmDatabase_NFeBD: TDataModule};
+  DmdDatabase_NFeBD in '..\ssfacil\DmdDatabase_NFeBD.pas' {dmDatabase_NFeBD: TDataModule},
+  DmdDatabase_EBS in 'DmdDatabase_EBS.pas' {dmDatabase_EBS: TDataModule};
 
 {$R *.res}
 

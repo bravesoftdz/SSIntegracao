@@ -438,6 +438,9 @@ type
     cdsTransferenciaCOD_CONTABIL_CONTAS_ORI: TIntegerField;
     cdsTransferenciaCOD_CONTABIL_CONTAS_DEST: TIntegerField;
     cdsTransferenciaVLR_MOVIMENTO: TFloatField;
+    qParametros_Fin: TSQLQuery;
+    qParametros_FinUSA_ID_SAGE_INT: TStringField;
+    cdsItensREFERENCIA: TStringField;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }
@@ -452,14 +455,18 @@ var
 
 implementation
 
-uses DmdDatabase;
+uses DmdDatabase, DmdDatabase_EBS;
 
 {$R *.dfm}
 
 procedure TDMIntegracao.DataModuleCreate(Sender: TObject);
 begin
   qParametros_Geral.Open;
+  qParametros_Fin.Open;
   cdsFilial.Open;
+
+  if qParametros_FinUSA_ID_SAGE_INT.AsString = 'S' then
+   dmDatabase_EBS := TdmDatabase_EBS.Create(Self);
 end;
 
 

@@ -13,7 +13,8 @@ uses
   UCadContabil_Ope_Lacto in 'UCadContabil_Ope_Lacto.pas' {frmCadContabil_Ope_Lacto},
   logprovider in '..\logs\src\logprovider.pas',
   LogTypes in '..\logs\src\LogTypes.pas',
-  UConvPlanoContas in 'UConvPlanoContas.pas' {frmConvPlanoContas};
+  UConvPlanoContas in 'UConvPlanoContas.pas' {frmConvPlanoContas},
+  DmdDatabase_NFeBD in '..\ssfacil\DmdDatabase_NFeBD.pas' {dmDatabase_NFeBD: TDataModule};
 
 {$R *.res}
 

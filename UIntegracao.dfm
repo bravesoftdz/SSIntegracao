@@ -1,10 +1,10 @@
 object frmIntegracao: TfrmIntegracao
-  Left = 287
-  Top = 33
+  Left = 235
+  Top = 30
   Width = 1055
   Height = 651
   BorderIcons = [biSystemMenu]
-  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.16 18/10/2019)'
+  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.17 11/11/2019)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,10 +23,10 @@ object frmIntegracao: TfrmIntegracao
     Top = 0
     Width = 1047
     Height = 620
-    ActivePage = TS_Geracao
+    ActivePage = TS_Menu
     ActivePageDefault = TS_Geracao
     Align = alClient
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 0
     FixedDimension = 19
     object TS_Menu: TRzTabSheet

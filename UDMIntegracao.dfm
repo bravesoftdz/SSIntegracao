@@ -2,8 +2,8 @@ object DMIntegracao: TDMIntegracao
   OldCreateOrder = False
   OnCreate = DataModuleCreate
   Left = 278
-  Top = 131
-  Height = 551
+  Top = 51
+  Height = 631
   Width = 1000
   object qParametros_Geral: TSQLQuery
     MaxBlobSize = -1
@@ -12,8 +12,8 @@ object DMIntegracao: TDMIntegracao
       'SELECT *'
       'FROM PARAMETROS_GERAL')
     SQLConnection = dmDatabase.scoDados
-    Left = 504
-    Top = 48
+    Left = 503
+    Top = 46
     object qParametros_GeralID: TIntegerField
       FieldName = 'ID'
       Required = True
@@ -879,7 +879,7 @@ object DMIntegracao: TDMIntegracao
       end>
     SQLConnection = dmDatabase.scoDados
     Left = 209
-    Top = 320
+    Top = 319
   end
   object dspNota: TDataSetProvider
     DataSet = sdsNota
@@ -975,19 +975,20 @@ object DMIntegracao: TDMIntegracao
       'VLR_DESCONTO,PERC_IPI,'#13#10'             I.ID_CSTICMS,I.UNIDADE, I.V' +
       'LR_FRETE, i.PERC_BASE_ICMS_RED,'#13#10'             I.id_pis, I.id_cof' +
       'ins, I.perc_pis, I.perc_cofins, I.perc_icmssubst_proprio, I.orig' +
-      'em_prod'#13#10'      from NOTAFISCAL_ITENS I'#13#10'      where I.ID = :ID'#13#10 +
-      'union'#13#10'      select 0, SI.ID_SERVICO_INT ID_PRODUTO, SI.QTD, SI.' +
-      'VLR_UNITARIO, SI.VLR_TOTAL, 0, 0, 0, 0, 0, 0, '#39'S'#39' TIPO_NS,'#13#10'    ' +
-      '         S.ID ID_NOTA, 0 PERC_ICMS, 0 VLR_ICMS_UF_DEST, 0 VLR_IC' +
-      'MS_UF_REMET, 0 VLR_ICMS_FCP_DEST, SI.BASE_INSS,'#13#10'             SI' +
-      '.VLR_INSS, SI.BASE_CALCULO, SI.VLR_ISS, SI.VLR_ISS_RETIDO, SI.VL' +
-      'R_IR, SI.VLR_PIS, SI.VLR_COFINS,'#13#10'             SI.VLR_CSLL, S.RE' +
-      'TEM_INSS, 0 VLR_DESCONTO,0 PERC_IPI,0 ID_CSTICMS, '#39#39' UNIDADE, 0 ' +
-      'VLR_FRETE, 0 PERC_BASE_ICMS_RED,'#13#10'             0 ID_PIS, 0 ID_CO' +
-      'FINS, S.perc_pis, S.perc_cofins, 0 perc_icmssubst_proprio, 9 ori' +
-      'gem_prod'#13#10'      from NOTASERVICO S'#13#10'      inner join NOTASERVICO' +
-      '_ITENS SI on S.ID = SI.ID'#13#10'      where SI.ID = :ID) AUX'#13#10'where A' +
-      'UX.TIPO_NS = :TIPO_NS'#13#10#13#10
+      'em_prod,'#13#10'             I.REFERENCIA'#13#10'      from NOTAFISCAL_ITENS' +
+      ' I'#13#10'      where I.ID = :ID'#13#10'union'#13#10'      select 0, SI.ID_SERVICO' +
+      '_INT ID_PRODUTO, SI.QTD, SI.VLR_UNITARIO, SI.VLR_TOTAL, 0, 0, 0,' +
+      ' 0, 0, 0, '#39'S'#39' TIPO_NS,'#13#10'             S.ID ID_NOTA, 0 PERC_ICMS, ' +
+      '0 VLR_ICMS_UF_DEST, 0 VLR_ICMS_UF_REMET, 0 VLR_ICMS_FCP_DEST, SI' +
+      '.BASE_INSS,'#13#10'             SI.VLR_INSS, SI.BASE_CALCULO, SI.VLR_I' +
+      'SS, SI.VLR_ISS_RETIDO, SI.VLR_IR, SI.VLR_PIS, SI.VLR_COFINS,'#13#10'  ' +
+      '           SI.VLR_CSLL, S.RETEM_INSS, 0 VLR_DESCONTO,0 PERC_IPI,' +
+      '0 ID_CSTICMS, '#39#39' UNIDADE, 0 VLR_FRETE, 0 PERC_BASE_ICMS_RED,'#13#10'  ' +
+      '           0 ID_PIS, 0 ID_COFINS, S.perc_pis, S.perc_cofins, 0 p' +
+      'erc_icmssubst_proprio, 9 origem_prod,'#13#10'             '#39#39' REFERENCI' +
+      'A'#13#10'      from NOTASERVICO S'#13#10'      inner join NOTASERVICO_ITENS ' +
+      'SI on S.ID = SI.ID'#13#10'      where SI.ID = :ID) AUX'#13#10'where AUX.TIPO' +
+      '_NS = :TIPO_NS'#13#10#13#10
     MaxBlobSize = -1
     Params = <
       item
@@ -1144,6 +1145,9 @@ object DMIntegracao: TDMIntegracao
     object cdsItensORIGEM_PROD: TStringField
       FieldName = 'ORIGEM_PROD'
       Size = 11
+    end
+    object cdsItensREFERENCIA: TStringField
+      FieldName = 'REFERENCIA'
     end
   end
   object dsItens: TDataSource
@@ -2238,6 +2242,21 @@ object DMIntegracao: TDMIntegracao
     end
     object cdsTransferenciaVLR_MOVIMENTO: TFloatField
       FieldName = 'VLR_MOVIMENTO'
+    end
+  end
+  object qParametros_Fin: TSQLQuery
+    MaxBlobSize = -1
+    Params = <>
+    SQL.Strings = (
+      'SELECT USA_ID_SAGE_INT'
+      'FROM PARAMETROS_FIN')
+    SQLConnection = dmDatabase.scoDados
+    Left = 387
+    Top = 48
+    object qParametros_FinUSA_ID_SAGE_INT: TStringField
+      FieldName = 'USA_ID_SAGE_INT'
+      FixedChar = True
+      Size = 1
     end
   end
 end
