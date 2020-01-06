@@ -62,14 +62,16 @@ type
     Label18: TLabel;
     Edit3: TEdit;
     dateInicial: TDateEdit;
-    dateFinal: TDateEdit;
-    dateGeracao: TDateEdit;
     Panel4: TPanel;
     Label19: TLabel;
     RzProgressBar3: TRzProgressBar;
     Label22: TLabel;
     Label21: TLabel;
     RzProgressBar4: TRzProgressBar;
+    dateFinal: TDateEdit;
+    dateGeracao: TDateEdit;
+    Label23: TLabel;
+    RzProgressBar5: TRzProgressBar;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -89,11 +91,13 @@ type
     vHistorico : String;
     vCod_Debito, vCod_Credito : Integer;
     vVlr_Lacto : Real;
-    Txt  : TextFile;
+    Txt, TxtItem  : TextFile;
     vRegistro : String;
     vArquivo : String;
     vVlrContabil : Real;
     vCont_Hist : Integer;
+    vPerc_ICMS, vVlr_ICMS, vBase_ICMS : array[1..6] of Real;
+    vBase_IPI, vVlr_IPI : real;
 
     procedure prc_Consultar_Titulos_Pagos;
     procedure prc_Consultar_Transferencia;
@@ -120,6 +124,14 @@ type
     procedure prc_Exclui_mCFOP;
     procedure prc_Montar_CliFor;
     procedure prc_Montar_Trailler;
+
+    procedure prc_Le_ConsProd;
+    procedure prc_Unidade;
+    procedure prc_Cadastro_Item;
+    procedure prc_Fator_Conversao;
+
+    procedure prc_Le_ICMS;
+
     function Monta_Numero(Campo: String; Tamanho: Integer): String;
     function fnc_Busca_Cod_Sage : String;
 
@@ -133,7 +145,7 @@ var
 implementation
 
 uses rsDBUtils, DB, UCadContabil_Ope, uUtilPadrao, StrUtils,
-  UConvPlanoContas, DateUtils, DmdDatabase_EBS;
+  UConvPlanoContas, DateUtils, DmdDatabase_EBS, DmdDatabase;
 
 {$R *.dfm}
 
@@ -872,6 +884,7 @@ begin
   fDMIntegracao.sdsNota.ParamByName('DATA2').AsDate     := dateFinal.Date;
   fDMIntegracao.cdsNota.Open;
   prc_Le_cdsNota;
+  prc_Le_ConsProd;
 end;
 
 procedure TfrmIntegracao.prc_Le_cdsNota;
@@ -884,44 +897,59 @@ begin
     vArquivo := vArquivo + '\';
   AssignFile(Txt,vArquivo + 'NOTAENT.TXT');
   ReWrite(Txt);
-  prc_Header;
-  RzProgressBar3.TotalParts    := 0;
-  RzProgressBar3.PartsComplete := 0;
-  RzProgressBar3.TotalParts    := fDMIntegracao.cdsNota.RecordCount;
 
-  fDMIntegracao.cdsNota.First;
-  while not fDMIntegracao.cdsNota.Eof do
-  begin
-  
-    RzProgressBar3.PartsComplete := RzProgressBar3.PartsComplete + 1;
-    prc_Emitente_Destinatario;
-    prc_Nota_Fiscal;
-    fDMIntegracao.cdsItens.Close;
-    fDMIntegracao.sdsItens.ParamByName('ID').AsInteger     := fDMIntegracao.cdsNotaID.AsInteger;
-    fDMIntegracao.sdsItens.ParamByName('TIPO_NS').AsString := fDMIntegracao.cdsNotaTIPO_NS.AsString;
-    fDMIntegracao.cdsItens.Open;
-    prc_Exclui_mCFOP;
+  try
+    prc_Header;
+    RzProgressBar3.TotalParts    := 0;
+    RzProgressBar3.PartsComplete := 0;
+    RzProgressBar3.TotalParts    := fDMIntegracao.cdsNota.RecordCount;
 
-    fDMIntegracao.cdsItens.First;
-    while not fDMIntegracao.cdsItens.Eof do
+    fDMIntegracao.cdsNota.First;
+    while not fDMIntegracao.cdsNota.Eof do
     begin
-//      prc_Grava_mCFOP;
-//      prc_Grava_mProd;
+
+      RzProgressBar3.PartsComplete := RzProgressBar3.PartsComplete + 1;
+      prc_Emitente_Destinatario;
+      prc_Nota_Fiscal;
+      fDMIntegracao.cdsItens.Close;
+      fDMIntegracao.sdsItens.ParamByName('ID').AsInteger     := fDMIntegracao.cdsNotaID.AsInteger;
+      fDMIntegracao.sdsItens.ParamByName('TIPO_NS').AsString := fDMIntegracao.cdsNotaTIPO_NS.AsString;
+      fDMIntegracao.cdsItens.Open;
+      prc_Exclui_mCFOP;
+
+      fDMIntegracao.cdsItens.First;
+      while not fDMIntegracao.cdsItens.Eof do
+      begin
+  //      prc_Grava_mCFOP;
+  //      prc_Grava_mProd;
+
+        if (trim(fDMIntegracao.cdsItensUNIDADE.AsString) <> '') and
+          not(fDMIntegracao.mUnidade.locate('Unidade',fDMIntegracao.cdsItensUNIDADE.AsString,[loCaseInsensitive])) then
+        begin
+          fDMIntegracao.mUnidade.Insert;
+          fDMIntegracao.mUnidadeUnidade.AsString := fDMIntegracao.cdsItensUNIDADE.AsString; 
+          fDMIntegracao.qUnidade.Close;
+          fDMIntegracao.qUnidade.ParamByName('UNIDADE').AsString := fDMIntegracao.cdsItensUNIDADE.AsString;
+          fDMIntegracao.qUnidade.Open;
+          fDMIntegracao.mUnidadeNome.AsString := fDMIntegracao.qUnidadeNOME.AsString;
+          fDMIntegracao.mUnidade.Post;
+        end;
+
         prc_Itens_Nota_Fiscal;
-      fDMIntegracao.cdsItens.Next;
-    end;
-    prc_Montar_DadosComplementares;
-    fDMIntegracao.mCFOP.First;
-    while not fDMIntegracao.mCFOP.Eof do
-    begin
-//      prc_NotasFiscais;
+        fDMIntegracao.cdsItens.Next;
+      end;
+      prc_Montar_DadosComplementares;
+      fDMIntegracao.mCFOP.First;
+      while not fDMIntegracao.mCFOP.Eof do
+      begin
+  //      prc_NotasFiscais;
 
-      fDMIntegracao.mCFOP.Next;
+        fDMIntegracao.mCFOP.Next;
+      end;
+      fDMIntegracao.cdsNota.Next;
     end;
-    fDMIntegracao.cdsNota.Next;
-    Label22.Font.Color := clBlue;
-    Label22.Caption    := 'Arquivo gerado com sucesso';
-    Label22.Visible    := True;
+  finally
+    CloseFile(Txt);
   end;
 
 end;
@@ -1084,6 +1112,7 @@ end;
 procedure TfrmIntegracao.prc_Nota_Fiscal;
 var
   texto1, texto2 : String;
+  vCont_ICMS : Integer;
 begin
   Texto1 := '1';                                                                         //Tipo Registro   Tamanho 1 - 1 a 1
   Texto1 := Texto1 + Monta_Numero(DateToStr(fDMIntegracao.cdsNotaDTSAIDAENTRADA.AsDateTime),8);  //Data Lançamento   Tamanho 8 - 2 a 9
@@ -1102,35 +1131,52 @@ begin
     Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsNotaVLR_NOTA.AsFloat),12)
   else
     Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base PIS   Tamanho 12      - 72 a 83
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base Cofins   Tamanho 12   - 84 a 95
+  if StrToFloat(FormatFloat('0.00',fDMIntegracao.cdsNotaVLR_PIS.AsFloat)) > 0 then //Base PIS   Tamanho 12      - 72 a 83
+    Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsNotaVLR_NOTA.AsFloat),12)
+  else
+    Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);   
+  if StrToFloat(FormatFloat('0.00',fDMIntegracao.cdsNotaVLR_COFINS.AsFloat)) > 0 then //Base Cofins   Tamanho 12   - 84 a 95
+    Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsNotaVLR_NOTA.AsFloat),12)
+  else
+    Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base CSLL   Tamanho 12     - 96 a 107
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base IRPJ   Tamanho 12     - 108 a 119
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS A  Tamanho 12    - 120 a 131
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS A  Tamanho 4 - 132 a 135
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor ICMS A  Tamanho 12   - 136 a 147
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS B  Tamanho 12    - 148 a 159
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS B  Tamanho 4 - 160 a 163
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor ICMS B  Tamanho 12   - 164 a 175
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS C  Tamanho 12    - 176 a 187
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS C  Tamanho 4 - 188 a 191
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor ICMS C  Tamanho 12   - 192 a 203
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS D  Tamanho 12    - 204 a 215
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS D  Tamanho 4 - 216 a 219
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor ICMS D  Tamanho 12   - 220 a 231
+
+  prc_Le_ICMS;
+  vCont_ICMS := 1;
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vBase_ICMS[vCont_ICMS]),12);                             //Base ICMS A  Tamanho 12    - 120 a 131
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vPerc_ICMS[vCont_ICMS]),4);                              //Aliquota ICMS A  Tamanho 4 - 132 a 135
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vVlr_ICMS[vCont_ICMS]),12);                             //Valor ICMS A  Tamanho 12   - 136 a 147
+  vCont_ICMS := vCont_ICMS + 1;
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vBase_ICMS[vCont_ICMS]),12);                             //Base ICMS B  Tamanho 12    - 148 a 159
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vPerc_ICMS[vCont_ICMS]),4);                              //Aliquota ICMS B  Tamanho 4 - 160 a 163
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vVlr_ICMS[vCont_ICMS]),12);                             //Valor ICMS B  Tamanho 12   - 164 a 175
+  vCont_ICMS := vCont_ICMS + 1;
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vBase_ICMS[vCont_ICMS]),12);                             //Base ICMS C  Tamanho 12    - 176 a 187
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vPerc_ICMS[vCont_ICMS]),4);                              //Aliquota ICMS C  Tamanho 4 - 188 a 191
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vVlr_ICMS[vCont_ICMS]),12);                             //Valor ICMS C  Tamanho 12   - 192 a 203
+  vCont_ICMS := vCont_ICMS + 1;
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vBase_ICMS[vCont_ICMS]),12);                             //Base ICMS D  Tamanho 12    - 204 a 215
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vPerc_ICMS[vCont_ICMS]),4);                              //Aliquota ICMS D  Tamanho 4 - 216 a 219
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vVlr_ICMS[vCont_ICMS]),12);                             //Valor ICMS D  Tamanho 12   - 220 a 231
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de isentas de ICMS  Tamanho 12 - 232 a 243
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de outras de ICMS   Tamanho 12 - 244 a 255
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base IPI   Tamanho 12                - 256 a 267
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor IPI   Tamanho 12               - 268 a 279
+
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsNotaBASE_IPI.AsFloat),12);                             //Base IPI   Tamanho 12                - 256 a 267
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsNotaVLR_IPI.AsFloat),12);                             //Valor IPI   Tamanho 12               - 268 a 279
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de isentas de IPI   Tamanho 12 - 280 a 291
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de outras de IPI   Tamanho 12  - 292 a 303
+  
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de merc. com ST Tamanho 12     - 304 a 315
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base da ST    Tamanho 12             - 316 a 327
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //ICMS da ST   Tamanho 12              - 328 a 339
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsNotaBASE_ICMSSUBST.AsFloat),12);                             //Base da ST    Tamanho 12             - 316 a 327
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsNotaVLR_ICMSSUBST.AsFloat),12);                             //ICMS da ST   Tamanho 12              - 328 a 339
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor de merc.Diferidas Tamanho 12   - 340 a 351
   Texto1 := Texto1 + Formatar_Campo('',50);                                              //Observações   Tamanho 50             - 352 a 401
-  Texto1 := Texto1 + Formatar_Campo('NFSE',5);                                           //Espécie  Tamanho 5                   - 402 a 406
-  Texto1 := Texto1 + Formatar_Campo('N',1);                                              //Venda a Vista  Tamanho 1             - 407 a 407
+  if fDMIntegracao.cdsNotaTIPO_NS.AsString = 'N' then
+    Texto1 := Texto1 + Formatar_Campo('NFe',5)                                             //Espécie  Tamanho 5                   - 402 a 406
+  else
+    Texto1 := Texto1 + Formatar_Campo('NFSe',5);                                           //Espécie  Tamanho 5                   - 402 a 406
+  Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsNotaTIPO_CONDICAO.AsString,1);                                              //Venda a Vista  Tamanho 1             - 407 a 407
   Texto1 := Texto1 + Monta_Numero('',4);                                                 //Nat. Operação ST (CFOP) Tamanho 4    - 408 a 411
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),8);                              //Base Pis/Cofins ST   Tamanho 8       - 412 a 419
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ISS   Tamanho 12                - 420 a 431
@@ -1166,12 +1212,14 @@ begin
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //ICMS relativo ao FCP  Tamanho 12     - 686 a 697
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //ICMS UF Destino  Tamanho 12          - 698 a 709
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //ICMS UF Origem  Tamanho 12           - 710 a 721
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS E Tamanho 12               - 722 a 733
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS E  Tamanho 4           - 734 a 737
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Valor ICMS E Tamanho 12              - 738 a 749
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                             //Base ICMS F Tamanho 12               - 750 a 761
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),4);                              //Aliquota ICMS F  Tamanho 4           - 762 a 765
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',0),12);                              //Valor ICMS F Tamanho 12             - 766 a 777
+  vCont_ICMS := vCont_ICMS + 1;
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vBase_ICMS[vCont_ICMS]),12);        //Base ICMS E Tamanho 12               - 722 a 733
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vPerc_ICMS[vCont_ICMS]),4);         //Aliquota ICMS E  Tamanho 4           - 734 a 737
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vVlr_ICMS[vCont_ICMS]),12);         //Valor ICMS E Tamanho 12              - 738 a 749
+  vCont_ICMS := vCont_ICMS + 1;
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vBase_ICMS[vCont_ICMS]),12);        //Base ICMS F Tamanho 12               - 750 a 761
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vPerc_ICMS[vCont_ICMS]),4);         //Aliquota ICMS F  Tamanho 4           - 762 a 765
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vVlr_ICMS[vCont_ICMS]),12);        //Valor ICMS F Tamanho 12             - 766 a 777
   Writeln(txt,texto1);
 end;
 
@@ -1206,7 +1254,7 @@ begin
   Texto1 := Texto1 + Formatar_Campo('',15);                                                            //Identificação   Tamanho 15     - 112 a 126
   Texto1 := Texto1 + Monta_Numero(SQLLocate('TAB_CSTIPI','ID','COD_IPI',fDMIntegracao.cdsItensID_CSTICMS.asString),3); //ST do IPI    Tamanho 3 - 127 a 129
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensBASE_IPI.AsFloat),12);      //Base IPI ST    Tamanho 12 - 130 a 141
-  Texto1 := Texto1 + Monta_Numero(SQLLocate('TAB_CSTIPI','ID','CODIGO',fDMIntegracao.cdsItensID_PIS.asString),2);
+  Texto1 := Texto1 + Monta_Numero(SQLLocate('TAB_PIS','ID','CODIGO',fDMIntegracao.cdsItensID_PIS.asString),2);
    //Situação tributária do PIS    Tamanho 2 - 142 a 143
   if StrToFloat(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_PIS.AsFloat)) > 0 then
     Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_TOTAL.AsFloat),12) //Base PIS     Tamanho 12 - 144 a 155
@@ -1219,7 +1267,7 @@ begin
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.000',0),13);                                           //Quantidade Base PIS    Tamanho 13 - 163 a 175
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.0000',0),14);                                           //Aliquota PIS (R$)    Tamanho 14 - 176 a 189
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_PIS.AsFloat),12);                                           //Valor PIS    Tamanho 12 - 190 a 201
-  Texto1 := Texto1 + Monta_Numero(SQLLocate('TAB_CSTCOFINS','ID','CODIGO',fDMIntegracao.cdsItensID_COFINS.asString),2); //Situação tributária do Cofins    Tamanho 2 - 202 a 203
+  Texto1 := Texto1 + Monta_Numero(SQLLocate('TAB_COFINS','ID','CODIGO',fDMIntegracao.cdsItensID_COFINS.asString),2); //Situação tributária do Cofins    Tamanho 2 - 202 a 203
   if StrToFloat(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_COFINS.AsFloat)) > 0 then
     Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsItensVLR_TOTAL.AsFloat),12) //Base Cofins     Tamanho 12 - 204 a 215
   else
@@ -1429,6 +1477,219 @@ begin
     sds.Open;
     if trim(sds.FieldByName('cd_item').AsString) <> '' then
       Result := sds.FieldByName('cd_item').AsString;
+  finally
+    FreeAndNil(sds);
+  end;
+end;
+
+procedure TfrmIntegracao.prc_Le_ConsProd;
+begin
+  vRegistro    := '';
+  vArquivo  := edtDiretorioArquivo.Text;
+  if Copy(vArquivo,(Length(vArquivo)),1) <> '\' then
+    vArquivo := vArquivo + '\';
+  AssignFile(Txt,vArquivo + 'ITEM.TXT');
+  ReWrite(Txt);
+
+  try
+    prc_Unidade;
+
+    fDMIntegracao.cdsConsProd.Close;
+    fDMIntegracao.sdsConsProd.ParamByName('FILIAL').AsInteger := RxDBLookupCombo2.KeyValue;
+    fDMIntegracao.sdsConsProd.ParamByName('DATA1').AsDate     := dateInicial.Date;
+    fDMIntegracao.sdsConsProd.ParamByName('DATA2').AsDate     := dateFinal.Date;
+    fDMIntegracao.cdsConsProd.Open;
+
+    RzProgressBar5.TotalParts    := 0;
+    RzProgressBar5.PartsComplete := 0;
+    RzProgressBar5.TotalParts    := fDMIntegracao.cdsConsProd.RecordCount;
+
+    fDMIntegracao.cdsConsProd.First;
+    while not fDMIntegracao.cdsConsProd.Eof do
+    begin
+      RzProgressBar5.PartsComplete := RzProgressBar5.PartsComplete + 1;
+
+      prc_Cadastro_Item;
+
+      fDMIntegracao.cdsConsProd.Next;
+    end;
+
+    fDMIntegracao.cdsConsUnidade_Conv.Close;
+    fDMIntegracao.cdsConsUnidade_Conv.Open;
+    fDMIntegracao.cdsConsUnidade_Conv.First;
+    while not fDMIntegracao.cdsConsUnidade_Conv.Eof do
+    begin
+      prc_Fator_Conversao;
+
+      fDMIntegracao.cdsConsUnidade_Conv.Next;
+    end;
+
+    Label22.Font.Color := clBlue;
+    Label22.Caption    := 'Arquivo ITEM.TXT gerado com sucesso';
+    Label22.Visible    := True;
+  finally
+    CloseFile(Txt);
+  end;
+
+end;
+
+procedure TfrmIntegracao.prc_Unidade;
+var
+  Texto1  : String;
+begin
+  vContador := 0;
+  fDMIntegracao.mUnidade.First;
+  while not fDMIntegracao.mUnidade.Eof do
+  begin
+    Texto1 := Formatar_Campo(fDMIntegracao.mUnidadeUnidade.AsString,6);  // Unidade     Tamanho 6 - 1 a 6
+    Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.mUnidadeNome.AsString,30);  // Nome     Tamanho 30 - 7 a 36
+    Texto1 := Texto1 + Formatar_Campo('',457);  // Brancos     Tamanho 457 - 37 a 493
+    Texto1 := Texto1 + '1';   // Tipo do Registro   Tamanho 1  - 494 a 494
+    vContador := vContador + 1;
+    Texto1    := Texto1 + Monta_Numero(IntToStr(vContador),6);                    //Sequência   Tamanho 6 - 495 a 500
+    Writeln(txt,texto1);
+    fDMIntegracao.mUnidade.Next;
+  end;
+end;
+
+procedure TfrmIntegracao.prc_Cadastro_Item;
+var
+  Texto1 : String;
+begin
+  Texto1 := Monta_Numero(fDMIntegracao.cdsConsProdID_PRODUTO.AsString,10);  // Tamanho 10  =  1 a 10
+  Texto1 := Texto1 + Formatar_Campo(copy(fDMIntegracao.cdsConsProdNOME.AsString,1,40),40);  // Tamanho 40  =  11 a 50
+  Texto1 := Texto1 + Monta_Numero(fDMIntegracao.cdsConsProdNCM.AsString,8);  // Tamanho 8  =  51 a 58
+  if Length(fDMIntegracao.cdsConsProdUNIDADE.AsString) < 5 then
+    Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsConsProdUNIDADE.AsString,4)  // Tamanho 4  =  59 a 62
+  else
+    Texto1 := Texto1 + Formatar_Campo('',4);  // Tamanho 4  =  59 a 62
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.000',fDMIntegracao.cdsConsProdPESOLIQUIDO.AsFloat),9);  //Tamanho 9  - 63 a 71
+  Texto1 := Texto1 + Formatar_Campo(copy(fDMIntegracao.cdsConsProdREFERENCIA.AsString,1,15),15);  //Tamanho 15  - 72 a 86
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '00' then //Tamanho 2  - 87 a 88
+    Texto1 := Texto1 + '01'
+  else
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '01' then
+    Texto1 := Texto1 + '02'
+  else
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '02' then
+    Texto1 := Texto1 + '06'
+  else
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '03' then
+    Texto1 := Texto1 + '04'
+  else
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '04' then
+    Texto1 := Texto1 + '05'
+  else
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '05' then
+    Texto1 := Texto1 + '07'
+  else
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '06' then
+    Texto1 := Texto1 + '03'
+  else
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '07' then
+    Texto1 := Texto1 + '08'
+  else
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '08' then
+    Texto1 := Texto1 + '09'
+  else
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '09' then
+    Texto1 := Texto1 + '10'
+  else
+  if fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString = '10' then
+    Texto1 := Texto1 + '11'
+  else
+    Texto1 := Texto1 + '99';
+  Texto1 := Texto1 + Formatar_Campo('',12);  //Tamanho 12  - 89 a 100
+  Texto1 := Texto1 + '000';  //Tamanho 3  - 101 a 103
+  Texto1 := Texto1 + '000';  //Tamanho 3  - 104 a 106
+  Texto1 := Texto1 + '000';  //Tamanho 3  - 107 a 109
+  Texto1 := Texto1 + '000';  //Tamanho 3  - 110 a 112
+  if length(fDMIntegracao.cdsConsProdUNIDADE.AsString) > 4 then
+    Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsConsProdUNIDADE.AsString,6)  //Tamanho 6  - 113 a 118
+  else
+    Texto1 := Texto1 + Formatar_Campo('',6);  //Tamanho 6  - 113 a 118
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsConsProdPERC_ICMS_NFCE.AsFloat),5);  //Tamanho 5  - 119 a 123
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',fDMIntegracao.cdsConsProdPERC_IPI.AsFloat),5);  //Tamanho 5  - 124 a 128
+  Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsFilialSIMPLES.AsString,1);  //Tamanho 1  - 129 a 129
+  Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsConsProdREFERENCIA.AsString,30);  //Tamanho 30  - 130 a 159
+  Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsConsProdCOD_BARRA.AsString,20);  //Tamanho 20  - 160 a 179
+  Texto1 := Texto1 + '000'; //Tamanho 3  - 180 a 182
+  Texto1 := Texto1 + '000'; //Tamanho 3  - 183 a 185
+  Texto1 := Texto1 + '000'; //Tamanho 3  - 186 a 188
+  Texto1 := Texto1 + '000'; //Tamanho 3  - 189 a 191
+  Texto1 := Texto1 + Formatar_Campo('',20);  //Tamanho 20  - 192 a 211
+  Texto1 := Texto1 + '0000000';  //Tamanho 7  - 212 a 218                                        
+  Texto1 := Texto1 + '0000000';  //Tamanho 7  - 219 a 225                                        
+  Texto1 := Texto1 + Monta_Numero('0',10);  //Tamanho 10  - 226 a 235                                        
+  Texto1 := Texto1 + Formatar_Campo(copy(fDMIntegracao.cdsConsProdNOME.AsString,1,60),60);  //Tamanho 60  - 236 a 295
+  Texto1 := Texto1 + Monta_Numero(fDMIntegracao.cdsConsProdCOD_CEST.AsString,7);  //Tamanho 7  - 296 a 302                                        
+  Texto1 := Texto1 + '0';  //Tamanho 1  - 303 a 303                                        
+  Texto1 := Texto1 + '0';  //Tamanho 1  - 304 a 304
+  Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString,6);  //Tamanho 6  - 305 a 310                                        
+  Texto1 := Texto1 + Formatar_Campo('',183);  //Tamanho 183  - 311 a 493                                        
+  Texto1 := Texto1 + '2';  //Tamanho 1  - 494 a 494
+  
+  vContador := 1;
+  texto1 := texto1 + FormatFloat('00000',vContador);
+  Writeln(txt,texto1);
+  
+end;
+
+procedure TfrmIntegracao.prc_Fator_Conversao;
+var
+  Texto1 : String;
+begin
+  Texto1 := Monta_Numero(fDMIntegracao.cdsConsUnidade_ConvID_PRODUTO.AsString,10);  // Tamanho 10  =  1 a 10
+  Texto1 := Texto1 + Formatar_Campo(copy(fDMIntegracao.cdsConsUnidade_ConvREFERENCIA.AsString,1,15),15);  // Tamanho 15  =  11 a 25
+  Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsConsUnidade_ConvUNIDADE_CONV.AsString,6);  // Tamanho 15  =  26 a 31
+  if fDMIntegracao.cdsConsUnidade_ConvTIPO_CONVERSOR.AsString = 'L' then   // Tamanho 16  =  32 a 47
+    Texto1 := Texto1 + Monta_Numero(FormatFloat('0.000000',fDMIntegracao.cdsConsUnidade_ConvPESOLIQUIDO.AsFloat),16)
+  else
+  if fDMIntegracao.cdsConsUnidade_ConvTIPO_CONVERSOR.AsString = 'B' then
+    Texto1 := Texto1 + Monta_Numero(FormatFloat('0.000000',fDMIntegracao.cdsConsUnidade_ConvPESOBRUTO.AsFloat),16)
+  else
+    Texto1 := Texto1 + Monta_Numero(FormatFloat('0.000000',fDMIntegracao.cdsConsUnidade_ConvQTD.AsFloat),16);
+  Texto1 := Texto1 + Formatar_Campo('',446);  // Tamanho 446  =  48 a 493
+  Texto1 := Texto1 + '3'; //Tamanho 1  = 494 a 494
+  vContador := 1;
+  texto1 := texto1 + FormatFloat('00000',vContador);
+  Writeln(txt,texto1);
+end;
+
+procedure TfrmIntegracao.prc_Le_ICMS;
+var
+  sds: TSQLDataSet;
+  i : Integer;
+begin
+  for i := 1 to 6 do
+  begin
+    vPerc_ICMS[i] := 0;
+    vVlr_ICMS[i]  := 0;
+    vBase_ICMS[i] := 0;
+  end;
+
+  sds := TSQLDataSet.Create(nil);
+  try
+    sds.SQLConnection := dmDatabase.scoDados;
+    sds.NoMetadata    := True;
+    sds.GetMetadata   := False;
+    sds.Close;
+    sds.CommandText := 'select sum(i.base_icms) base_icms, i.perc_icms, sum(i.vlr_icms) vlr_icms '
+                     + 'from notafiscal_itens i '
+                     + 'WHERE I.ID = :ID '
+                     + 'GROUP BY I.perc_icms ';
+    sds.ParamByName('ID').AsInteger := fDMIntegracao.cdsNotaID.AsInteger;
+    sds.Open;
+    i := 0;
+    while not sds.Eof do
+    begin
+      i := i + 1;
+      vPerc_ICMS[i] := StrToFloat(FormatFloat('0.00',sds.FieldByName('perc_icms').AsFloat));
+      vVlr_ICMS[i]  := StrToFloat(FormatFloat('0.00',sds.FieldByName('vlr_icms').AsFloat));
+      vBase_ICMS[i] := StrToFloat(FormatFloat('0.00',sds.FieldByName('base_icms').AsFloat));
+      sds.Next;
+    end;
+
   finally
     FreeAndNil(sds);
   end;

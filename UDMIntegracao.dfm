@@ -832,19 +832,23 @@ object DMIntegracao: TDMIntegracao
       'O, '#39'X'#39') TIPO_CONDICAO, coalesce(N.TIPO_FRETE, '#39#39') TIPO_FRETE, '#39'N' +
       #39' TIPO_NS, N.VLR_NOTA VLR_NOTA,'#13#10'       N.VLR_PIS VLR_PIS, N.VLR' +
       '_COFINS VLR_COFINS, N.BASE_ICMS BASE_ICMS, N.VLR_ICMS VLR_ICMS, ' +
-      'CFOP.CODCFOP'#13#10#13#10'from NOTAFISCAL N'#13#10'left join CONDPGTO COND on N.' +
-      'ID_CONDPGTO = COND.ID'#13#10'LEFT JOIN TAB_CFOP CFOP ON N.id_cfop = CF' +
-      'OP.ID'#13#10'where N.TIPO_REG = '#39'NTE'#39' and'#13#10'      N.DTSAIDAENTRADA betw' +
-      'een :DATA1 and :DATA2 and'#13#10'      N.FILIAL = :FILIAL'#13#10#13#10'union'#13#10#13#10 +
-      'select NS.ID, NS.TIPO_DOC, NS.TIPO_ES, NS.NUMNOTA, NS.SERIE, NS.' +
-      'ID_CLIENTE, NS.DTEMISSAO_CAD, NS.DTENTRADA,'#13#10'       coalesce(CON' +
-      'D.TIPO, '#39'X'#39') TIPO_CONDICAO, '#39#39' as TIPO_FRETE, '#39'S'#39' TIPO_NS, NS.VL' +
-      'R_TOTAL VLR_NOTA,'#13#10'       NS.VLR_PIS VLR_PIS, NS.VLR_COFINS VLR_' +
-      'COFINS, CAST('#39'0.00'#39' AS FLOAT) BASE_ICMS, NS.VLR_ICMS VLR_ICMS,'#13#10 +
-      '       CAST('#39'0'#39' AS INTEGER) CODCFOP'#13#10'from NOTASERVICO NS'#13#10'left j' +
-      'oin CONDPGTO COND on NS.ID_CONDPGTO = COND.ID'#13#10'where NS.TIPO_ES ' +
-      '= '#39'E'#39' and'#13#10'      NS.DTENTRADA between :DATA1 and :DATA2 and'#13#10'   ' +
-      '   NS.FILIAL = :FILIAL'#13#10
+      'CFOP.CODCFOP,'#13#10'       n.vlr_ipi, n.base_ipi, n.vlr_icmssubst, n.' +
+      'base_icmssubst'#13#10#13#10'from NOTAFISCAL N'#13#10'left join CONDPGTO COND on ' +
+      'N.ID_CONDPGTO = COND.ID'#13#10'LEFT JOIN TAB_CFOP CFOP ON N.id_cfop = ' +
+      'CFOP.ID'#13#10'where N.TIPO_REG = '#39'NTE'#39' and'#13#10'      N.DTSAIDAENTRADA be' +
+      'tween :DATA1 and :DATA2 and'#13#10'      N.FILIAL = :FILIAL'#13#10#13#10'union'#13#10 +
+      #13#10'select NS.ID, NS.TIPO_DOC, NS.TIPO_ES, NS.NUMNOTA, NS.SERIE, N' +
+      'S.ID_CLIENTE, NS.DTEMISSAO_CAD, NS.DTENTRADA,'#13#10'       coalesce(C' +
+      'OND.TIPO, '#39'X'#39') TIPO_CONDICAO, '#39#39' as TIPO_FRETE, '#39'S'#39' TIPO_NS, NS.' +
+      'VLR_TOTAL VLR_NOTA,'#13#10'       NS.VLR_PIS VLR_PIS, NS.VLR_COFINS VL' +
+      'R_COFINS, CAST('#39'0.00'#39' AS FLOAT) BASE_ICMS, NS.VLR_ICMS VLR_ICMS,' +
+      #13#10'       CAST('#39'0'#39' AS INTEGER) CODCFOP,'#13#10'       CAST('#39'0'#39' AS DOUBL' +
+      'E Precision) vlr_ipi, CAST('#39'0'#39' AS DOUBLE Precision) base_ipi,'#13#10' ' +
+      '      CAST('#39'0'#39' AS DOUBLE Precision) vlr_icmssubst,'#13#10'       CAST(' +
+      #39'0'#39' AS DOUBLE Precision) base_icmssubst'#13#10'from NOTASERVICO NS'#13#10'le' +
+      'ft join CONDPGTO COND on NS.ID_CONDPGTO = COND.ID'#13#10'where NS.TIPO' +
+      '_ES = '#39'E'#39' and'#13#10'      NS.DTENTRADA between :DATA1 and :DATA2 and'#13 +
+      #10'      NS.FILIAL = :FILIAL'#13#10
     MaxBlobSize = -1
     Params = <
       item
@@ -954,6 +958,18 @@ object DMIntegracao: TDMIntegracao
     object cdsNotaCODCFOP: TStringField
       FieldName = 'CODCFOP'
       Size = 11
+    end
+    object cdsNotaVLR_IPI: TFloatField
+      FieldName = 'VLR_IPI'
+    end
+    object cdsNotaBASE_IPI: TFloatField
+      FieldName = 'BASE_IPI'
+    end
+    object cdsNotaVLR_ICMSSUBST: TFloatField
+      FieldName = 'VLR_ICMSSUBST'
+    end
+    object cdsNotaBASE_ICMSSUBST: TFloatField
+      FieldName = 'BASE_ICMSSUBST'
     end
   end
   object dsNota: TDataSource
@@ -2258,5 +2274,226 @@ object DMIntegracao: TDMIntegracao
       FixedChar = True
       Size = 1
     end
+  end
+  object sdsConsProd: TSQLDataSet
+    NoMetadata = True
+    GetMetadata = False
+    CommandText = 
+      'select distinct I.ID_PRODUTO, P.REFERENCIA, P.NOME, P.UNIDADE, N' +
+      'CM.NCM, P.PESOLIQUIDO, P.PESOBRUTO, P.SPED_TIPO_ITEM,'#13#10'         ' +
+      '       P.ID_CSTICMS_BRED, P.ID_CSTICMS, IRED.COD_CST CST_ICMS_RE' +
+      'D, ICMS.COD_CST CST_ICMS, IPI.COD_IPI CST_IPI,'#13#10'                ' +
+      'P.PERC_ICMS_NFCE, P.PERC_IPI, P.COD_BARRA, P.COD_CEST'#13#10'from NOTA' +
+      'FISCAL_ITENS I'#13#10'inner join NOTAFISCAL NT on I.ID = NT.ID'#13#10'inner ' +
+      'join PRODUTO P on I.ID_PRODUTO = P.ID'#13#10'inner join TAB_NCM NCM on' +
+      ' P.ID_NCM = NCM.ID'#13#10'left join TAB_CSTICMS IRED on P.ID_CSTICMS_B' +
+      'RED = IRED.ID'#13#10'left join TAB_CSTICMS ICMS on P.ID_CSTICMS = ICMS' +
+      '.ID'#13#10'left join TAB_CSTIPI IPI on P.ID_CSTIPI = IPI.ID'#13#10'where NT.' +
+      'DTSAIDAENTRADA between :DATA1 and :DATA2 and'#13#10'      NT.FILIAL = ' +
+      ':FILIAL and'#13#10'      NT.TIPO_REG = '#39'NTE'#39'   '
+    MaxBlobSize = -1
+    Params = <
+      item
+        DataType = ftDate
+        Name = 'DATA1'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftDate
+        Name = 'DATA2'
+        ParamType = ptInput
+      end
+      item
+        DataType = ftInteger
+        Name = 'FILIAL'
+        ParamType = ptInput
+      end>
+    SQLConnection = dmDatabase.scoDados
+    Left = 210
+    Top = 455
+  end
+  object dspConsProd: TDataSetProvider
+    DataSet = sdsConsProd
+    Left = 258
+    Top = 456
+  end
+  object cdsConsProd: TClientDataSet
+    Aggregates = <>
+    IndexFieldNames = 'ID_PRODUTO'
+    Params = <>
+    ProviderName = 'dspConsProd'
+    Left = 307
+    Top = 456
+    object cdsConsProdID_PRODUTO: TIntegerField
+      FieldName = 'ID_PRODUTO'
+    end
+    object cdsConsProdREFERENCIA: TStringField
+      FieldName = 'REFERENCIA'
+    end
+    object cdsConsProdNOME: TStringField
+      FieldName = 'NOME'
+      Size = 100
+    end
+    object cdsConsProdUNIDADE: TStringField
+      FieldName = 'UNIDADE'
+      Size = 6
+    end
+    object cdsConsProdNCM: TStringField
+      FieldName = 'NCM'
+      Size = 10
+    end
+    object cdsConsProdPESOLIQUIDO: TFloatField
+      FieldName = 'PESOLIQUIDO'
+    end
+    object cdsConsProdPESOBRUTO: TFloatField
+      FieldName = 'PESOBRUTO'
+    end
+    object cdsConsProdSPED_TIPO_ITEM: TStringField
+      FieldName = 'SPED_TIPO_ITEM'
+      Size = 2
+    end
+    object cdsConsProdID_CSTICMS_BRED: TIntegerField
+      FieldName = 'ID_CSTICMS_BRED'
+    end
+    object cdsConsProdID_CSTICMS: TIntegerField
+      FieldName = 'ID_CSTICMS'
+    end
+    object cdsConsProdCST_ICMS_RED: TStringField
+      FieldName = 'CST_ICMS_RED'
+      Size = 3
+    end
+    object cdsConsProdCST_ICMS: TStringField
+      FieldName = 'CST_ICMS'
+      Size = 3
+    end
+    object cdsConsProdCST_IPI: TStringField
+      FieldName = 'CST_IPI'
+      Size = 2
+    end
+    object cdsConsProdPERC_ICMS_NFCE: TFloatField
+      FieldName = 'PERC_ICMS_NFCE'
+    end
+    object cdsConsProdPERC_IPI: TFloatField
+      FieldName = 'PERC_IPI'
+    end
+    object cdsConsProdCOD_BARRA: TStringField
+      FieldName = 'COD_BARRA'
+      Size = 14
+    end
+    object cdsConsProdCOD_CEST: TStringField
+      FieldName = 'COD_CEST'
+      Size = 7
+    end
+  end
+  object dsConsProd: TDataSource
+    DataSet = cdsConsProd
+    Left = 354
+    Top = 456
+  end
+  object mUnidade: TClientDataSet
+    Active = True
+    Aggregates = <>
+    Params = <>
+    Left = 482
+    Top = 439
+    Data = {
+      4F0000009619E0BD0100000018000000020000000000030000004F0007556E69
+      646164650100490000000100055749445448020002000600044E6F6D65010049
+      0000000100055749445448020002001E000000}
+    object mUnidadeUnidade: TStringField
+      FieldName = 'Unidade'
+      Size = 6
+    end
+    object mUnidadeNome: TStringField
+      FieldName = 'Nome'
+      Size = 30
+    end
+  end
+  object qUnidade: TSQLQuery
+    MaxBlobSize = -1
+    Params = <
+      item
+        DataType = ftString
+        Name = 'UNIDADE'
+        ParamType = ptInput
+      end>
+    SQL.Strings = (
+      'select UN.unidade, UN.nome'
+      'from unidade un'
+      'where UN.UNIDADE = :UNIDADE')
+    SQLConnection = dmDatabase.scoDados
+    Left = 650
+    Top = 487
+    object qUnidadeUNIDADE: TStringField
+      FieldName = 'UNIDADE'
+      Required = True
+      Size = 6
+    end
+    object qUnidadeNOME: TStringField
+      FieldName = 'NOME'
+      Size = 30
+    end
+  end
+  object sdsConsUnidade_Conv: TSQLDataSet
+    NoMetadata = True
+    GetMetadata = False
+    CommandText = 
+      'SELECT PU.id ID_PRODUTO, PU.unidade, U.unidade_conv, U.qtd, U.ti' +
+      'po_conversor,'#13#10'P.pesoliquido, P.pesobruto, P.referencia'#13#10'FROM PR' +
+      'ODUTO_UNI PU'#13#10'INNER JOIN PRODUTO P'#13#10'ON PU.ID = P.ID'#13#10'INNER JOIN ' +
+      'unidade_conv U'#13#10'ON U.unidade = PU.unidade'#13#10'AND U.item = PU.item_' +
+      'unidade'#13#10'where P.inativo = '#39'N'#39#13#10#13#10
+    MaxBlobSize = -1
+    Params = <>
+    SQLConnection = dmDatabase.scoDados
+    Left = 202
+    Top = 516
+  end
+  object dspConsUnidade_Conv: TDataSetProvider
+    DataSet = sdsConsUnidade_Conv
+    Left = 250
+    Top = 517
+  end
+  object cdsConsUnidade_Conv: TClientDataSet
+    Aggregates = <>
+    IndexFieldNames = 'ID_PRODUTO'
+    Params = <>
+    ProviderName = 'dspConsUnidade_Conv'
+    Left = 299
+    Top = 517
+    object cdsConsUnidade_ConvID_PRODUTO: TIntegerField
+      FieldName = 'ID_PRODUTO'
+      Required = True
+    end
+    object cdsConsUnidade_ConvUNIDADE: TStringField
+      FieldName = 'UNIDADE'
+      Size = 6
+    end
+    object cdsConsUnidade_ConvUNIDADE_CONV: TStringField
+      FieldName = 'UNIDADE_CONV'
+      Size = 6
+    end
+    object cdsConsUnidade_ConvQTD: TFloatField
+      FieldName = 'QTD'
+    end
+    object cdsConsUnidade_ConvTIPO_CONVERSOR: TStringField
+      FieldName = 'TIPO_CONVERSOR'
+      FixedChar = True
+      Size = 1
+    end
+    object cdsConsUnidade_ConvPESOLIQUIDO: TFloatField
+      FieldName = 'PESOLIQUIDO'
+    end
+    object cdsConsUnidade_ConvPESOBRUTO: TFloatField
+      FieldName = 'PESOBRUTO'
+    end
+    object cdsConsUnidade_ConvREFERENCIA: TStringField
+      FieldName = 'REFERENCIA'
+    end
+  end
+  object dsConsUnidade_Conv: TDataSource
+    DataSet = cdsConsUnidade_Conv
+    Left = 346
+    Top = 517
   end
 end

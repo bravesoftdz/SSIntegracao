@@ -4,7 +4,7 @@ object frmIntegracao: TfrmIntegracao
   Width = 1055
   Height = 651
   BorderIcons = [biSystemMenu]
-  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.17 11/11/2019)'
+  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.19 06/01/2020)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -527,7 +527,7 @@ object frmIntegracao: TfrmIntegracao
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 2
+          TabOrder = 8
           OnClick = btnGerarNotaEntClick
         end
         object edtDiretorioArquivo: TDirectoryEdit
@@ -540,7 +540,7 @@ object frmIntegracao: TfrmIntegracao
           Ctl3D = False
           NumGlyphs = 1
           ParentCtl3D = False
-          TabOrder = 1
+          TabOrder = 4
           Text = 'C:\'
         end
         object NxButton2: TNxButton
@@ -556,11 +556,11 @@ object frmIntegracao: TfrmIntegracao
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 3
+          TabOrder = 9
           OnClick = btnFecharClick
         end
         object RzGroupBox2: TRzGroupBox
-          Left = 649
+          Left = 650
           Top = 5
           Width = 312
           Height = 44
@@ -578,7 +578,7 @@ object frmIntegracao: TfrmIntegracao
           Font.Style = []
           ParentCtl3D = False
           ParentFont = False
-          TabOrder = 4
+          TabOrder = 5
           VisualStyle = vsGradient
           object Label17: TLabel
             Left = 31
@@ -615,7 +615,7 @@ object frmIntegracao: TfrmIntegracao
           ItemHeight = 13
           ItemIndex = 0
           ParentFont = False
-          TabOrder = 5
+          TabOrder = 7
           Text = '0=C'#225'lculo de PIS COFINS '#233' conforme vem na nfse'
           Items.Strings = (
             '0=C'#225'lculo de PIS COFINS '#233' conforme vem na nfse'
@@ -636,33 +636,33 @@ object frmIntegracao: TfrmIntegracao
           Width = 116
           Height = 21
           NumGlyphs = 2
-          TabOrder = 7
+          TabOrder = 1
         end
-      end
-      object dateFinal: TDateEdit
-        Left = 316
-        Top = 28
-        Width = 118
-        Height = 21
-        NumGlyphs = 2
-        TabOrder = 1
-      end
-      object dateGeracao: TDateEdit
-        Left = 500
-        Top = 28
-        Width = 118
-        Height = 21
-        NumGlyphs = 2
-        TabOrder = 2
+        object dateFinal: TDateEdit
+          Left = 318
+          Top = 29
+          Width = 118
+          Height = 21
+          NumGlyphs = 2
+          TabOrder = 2
+        end
+        object dateGeracao: TDateEdit
+          Left = 500
+          Top = 28
+          Width = 118
+          Height = 21
+          NumGlyphs = 2
+          TabOrder = 3
+        end
       end
       object Panel4: TPanel
         Left = 0
         Top = 110
         Width = 1043
-        Height = 81
+        Height = 108
         Align = alTop
         Color = 13948116
-        TabOrder = 3
+        TabOrder = 1
         object Label19: TLabel
           Left = 144
           Top = 19
@@ -683,7 +683,7 @@ object frmIntegracao: TfrmIntegracao
         end
         object Label22: TLabel
           Left = 328
-          Top = 36
+          Top = 66
           Width = 387
           Height = 32
           Caption = 'Arquivo gerado com sucesso'
@@ -694,6 +694,24 @@ object frmIntegracao: TfrmIntegracao
           Font.Style = [fsBold]
           ParentFont = False
           Visible = False
+        end
+        object Label23: TLabel
+          Left = 165
+          Top = 44
+          Width = 110
+          Height = 13
+          Caption = 'Processando Produtos:'
+        end
+        object RzProgressBar5: TRzProgressBar
+          Left = 279
+          Top = 33
+          Width = 569
+          BorderOuter = fsFlat
+          BorderWidth = 0
+          InteriorOffset = 0
+          PartsComplete = 0
+          Percent = 0
+          TotalParts = 0
         end
       end
     end
