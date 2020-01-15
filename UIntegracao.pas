@@ -1625,8 +1625,10 @@ begin
   Texto1 := Texto1 + Monta_Numero(fDMIntegracao.cdsConsProdCOD_CEST.AsString,7);  //Tamanho 7  - 296 a 302                                        
   Texto1 := Texto1 + '0';  //Tamanho 1  - 303 a 303                                        
   Texto1 := Texto1 + '0';  //Tamanho 1  - 304 a 304
-  Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString,6);  //Tamanho 6  - 305 a 310                                        
-  Texto1 := Texto1 + Formatar_Campo('',183);  //Tamanho 183  - 311 a 493                                        
+  //SPED_Tipo deixado em branco conforme Gonzaga    15/01/2020
+  //Texto1 := Texto1 + Formatar_Campo(fDMIntegracao.cdsConsProdSPED_TIPO_ITEM.AsString,6);  //Tamanho 6  - 305 a 310
+  Texto1 := Texto1 + Formatar_Campo('',6);  //Tamanho 6  - 305 a 310
+  Texto1 := Texto1 + Formatar_Campo('',183);  //Tamanho 183  - 311 a 493
   Texto1 := Texto1 + '2';  //Tamanho 1  - 494 a 494
   
   vContador := 1;
