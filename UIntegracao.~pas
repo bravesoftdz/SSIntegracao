@@ -90,6 +90,7 @@ type
     vArqTxt : TextFile;
     vHistorico : String;
     vCod_Debito, vCod_Credito : Integer;
+    vDtLancamento : TDateTime;
     vVlr_Lacto : Real;
     Txt, TxtItem  : TextFile;
     vRegistro : String;
@@ -623,7 +624,7 @@ end;
 procedure TfrmIntegracao.prc_Gravar_mAuxiliar_Novo(Tipo_Lanc: String);
 begin
   fDMIntegracao.mAuxiliar.Insert;
-  fDMIntegracao.mAuxiliarDtLancamento.AsDateTime := fDMIntegracao.cdsTitulos_PagosDTLANCAMENTO.AsDateTime;
+  fDMIntegracao.mAuxiliarDtLancamento.AsDateTime := vDtLancamento;
   fDMIntegracao.mAuxiliarCod_Credito.AsInteger   := vCod_Credito;
   fDMIntegracao.mAuxiliarCod_Debito.AsInteger    := vCod_Debito;
   fDMIntegracao.mAuxiliarCod_Historico.AsInteger := fDMIntegracao.cdsContabil_Ope_LactoCOD_HISTORICO.AsInteger;
@@ -698,8 +699,9 @@ begin
     if (fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger > 0) and (vCod_Credito <= 0) then
       prc_gravar_mErro('Título ' + fDMIntegracao.cdsTitulos_PagosNUMDUPLICATA.AsString + '/' + fDMIntegracao.cdsTitulos_PagosPARCELA.AsString + ' sem conta contabil (' + vContasAux[fDMIntegracao.cdsContabil_Ope_LactoCONTA_CREDITO.AsInteger] + ') no lançamento crédito' );
 
-    vHistorico := fnc_Monta_Hist(False,'');
-    vVlr_Lacto := fnc_Monta_Vlr(False);
+    vHistorico    := fnc_Monta_Hist(False,'');
+    vVlr_Lacto    := fnc_Monta_Vlr(False);
+    vDtLancamento := fDMIntegracao.cdsTitulos_PagosDTLANCAMENTO.AsDateTime;
     if (StrToFloat(FormatFloat('0.00',vVlr_Lacto)) > 0) then
     begin
       if vCod_Debito > 0 then
@@ -1446,6 +1448,7 @@ begin
     vHistorico := fnc_Monta_Hist(True,'Transferência de ' + fDMIntegracao.cdsTransferenciaNOME_CONTA_ORI.AsString + ' para '
                 + fDMIntegracao.cdsTransferenciaNOME_CONTA_DEST.AsString);
     vVlr_Lacto := fnc_Monta_Vlr(True);
+    vDtLancamento := fDMIntegracao.cdsTransferenciaDTEMISSAO.AsDateTime;
     if (StrToFloat(FormatFloat('0.00',vVlr_Lacto)) > 0) then
     begin
       if vCod_Debito > 0 then
