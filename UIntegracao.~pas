@@ -1221,7 +1221,19 @@ begin
   vCont_ICMS := vCont_ICMS + 1;
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vBase_ICMS[vCont_ICMS]),12);        //Base ICMS F Tamanho 12               - 750 a 761
   Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vPerc_ICMS[vCont_ICMS]),4);         //Aliquota ICMS F  Tamanho 4           - 762 a 765
-  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vVlr_ICMS[vCont_ICMS]),12);        //Valor ICMS F Tamanho 12             - 766 a 777
+  Texto1 := Texto1 + Monta_Numero(FormatFloat('0.00',vVlr_ICMS[vCont_ICMS]),12);         //Valor ICMS F Tamanho 12             - 766 a 777
+  //09/04/2020 Novos campos no layout
+  texto1 := texto1 + 'N';                                                                //FunRural Tamanho 1                  - 778 a 778
+
+  texto2 := '';
+  if copy(fDMIntegracao.cdsNotaCODCFOP.AsString,1,1) = '3' then
+    texto2 := copy(fDMIntegracao.cdsNotaNOME_CLIENTE.AsString,1,40);
+  texto1 := texto1 + Formatar_Campo(texto2,40);                                          //Razão Exterior Tamanho 40           - 779 a 818
+
+  texto1 := texto1 + Formatar_Campo(copy(fDMIntegracao.cdsNotaNFECHAVEACESSO.AsString,1,44),44);  //Chave Acesso Tamanho 44             - 819 a 862
+
+  texto1 := texto1 + Formatar_Campo('',155);                                             //Observação 3 Tamanho 155            - 863 a 1017
+
   Writeln(txt,texto1);
 end;
 

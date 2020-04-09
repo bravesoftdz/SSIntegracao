@@ -484,6 +484,8 @@ type
     cdsNotaBASE_IPI: TFloatField;
     cdsNotaVLR_ICMSSUBST: TFloatField;
     cdsNotaBASE_ICMSSUBST: TFloatField;
+    cdsNotaNFECHAVEACESSO: TStringField;
+    cdsNotaNOME_CLIENTE: TStringField;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }

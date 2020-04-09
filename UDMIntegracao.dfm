@@ -833,22 +833,25 @@ object DMIntegracao: TDMIntegracao
       #39' TIPO_NS, N.VLR_NOTA VLR_NOTA,'#13#10'       N.VLR_PIS VLR_PIS, N.VLR' +
       '_COFINS VLR_COFINS, N.BASE_ICMS BASE_ICMS, N.VLR_ICMS VLR_ICMS, ' +
       'CFOP.CODCFOP,'#13#10'       n.vlr_ipi, n.base_ipi, n.vlr_icmssubst, n.' +
-      'base_icmssubst'#13#10#13#10'from NOTAFISCAL N'#13#10'left join CONDPGTO COND on ' +
-      'N.ID_CONDPGTO = COND.ID'#13#10'LEFT JOIN TAB_CFOP CFOP ON N.id_cfop = ' +
-      'CFOP.ID'#13#10'where N.TIPO_REG = '#39'NTE'#39' and'#13#10'      N.DTSAIDAENTRADA be' +
-      'tween :DATA1 and :DATA2 and'#13#10'      N.FILIAL = :FILIAL'#13#10#13#10'union'#13#10 +
-      #13#10'select NS.ID, NS.TIPO_DOC, NS.TIPO_ES, NS.NUMNOTA, NS.SERIE, N' +
-      'S.ID_CLIENTE, NS.DTEMISSAO_CAD, NS.DTENTRADA,'#13#10'       coalesce(C' +
-      'OND.TIPO, '#39'X'#39') TIPO_CONDICAO, '#39#39' as TIPO_FRETE, '#39'S'#39' TIPO_NS, NS.' +
-      'VLR_TOTAL VLR_NOTA,'#13#10'       NS.VLR_PIS VLR_PIS, NS.VLR_COFINS VL' +
-      'R_COFINS, CAST('#39'0.00'#39' AS FLOAT) BASE_ICMS, NS.VLR_ICMS VLR_ICMS,' +
-      #13#10'       CAST('#39'0'#39' AS INTEGER) CODCFOP,'#13#10'       CAST('#39'0'#39' AS DOUBL' +
-      'E Precision) vlr_ipi, CAST('#39'0'#39' AS DOUBLE Precision) base_ipi,'#13#10' ' +
-      '      CAST('#39'0'#39' AS DOUBLE Precision) vlr_icmssubst,'#13#10'       CAST(' +
-      #39'0'#39' AS DOUBLE Precision) base_icmssubst'#13#10'from NOTASERVICO NS'#13#10'le' +
-      'ft join CONDPGTO COND on NS.ID_CONDPGTO = COND.ID'#13#10'where NS.TIPO' +
-      '_ES = '#39'E'#39' and'#13#10'      NS.DTENTRADA between :DATA1 and :DATA2 and'#13 +
-      #10'      NS.FILIAL = :FILIAL'#13#10
+      'base_icmssubst, n.nfechaveacesso, CLI.NOME NOME_CLIENTE'#13#10#13#10'from ' +
+      'NOTAFISCAL N'#13#10'left join CONDPGTO COND on N.ID_CONDPGTO = COND.ID' +
+      #13#10'LEFT JOIN TAB_CFOP CFOP ON N.id_cfop = CFOP.ID'#13#10'left join pess' +
+      'oa cli on n.id_cliente = cli.codigo'#13#10'where N.TIPO_REG = '#39'NTE'#39' an' +
+      'd'#13#10'      N.DTSAIDAENTRADA between :DATA1 and :DATA2 and'#13#10'      N' +
+      '.FILIAL = :FILIAL'#13#10#13#10'union'#13#10#13#10'select NS.ID, NS.TIPO_DOC, NS.TIPO' +
+      '_ES, NS.NUMNOTA, NS.SERIE, NS.ID_CLIENTE, NS.DTEMISSAO_CAD, NS.D' +
+      'TENTRADA,'#13#10'       coalesce(COND.TIPO, '#39'X'#39') TIPO_CONDICAO, '#39#39' as ' +
+      'TIPO_FRETE, '#39'S'#39' TIPO_NS, NS.VLR_TOTAL VLR_NOTA,'#13#10'       NS.VLR_P' +
+      'IS VLR_PIS, NS.VLR_COFINS VLR_COFINS, CAST('#39'0.00'#39' AS FLOAT) BASE' +
+      '_ICMS, NS.VLR_ICMS VLR_ICMS,'#13#10'       CAST('#39'0'#39' AS INTEGER) CODCFO' +
+      'P,'#13#10'       CAST('#39'0'#39' AS DOUBLE Precision) vlr_ipi, CAST('#39'0'#39' AS DO' +
+      'UBLE Precision) base_ipi,'#13#10'       CAST('#39'0'#39' AS DOUBLE Precision) ' +
+      'vlr_icmssubst,'#13#10'       CAST('#39'0'#39' AS DOUBLE Precision) base_icmssu' +
+      'bst, ns.chave_acesso nfechaveacesso, CLI.NOME NOME_CLIENTE'#13#10'from' +
+      ' NOTASERVICO NS'#13#10'left join CONDPGTO COND on NS.ID_CONDPGTO = CON' +
+      'D.ID'#13#10'LEFT JOIN PESSOA CLI ON NS.id_cliente = CLI.CODIGO'#13#10'where ' +
+      'NS.TIPO_ES = '#39'E'#39' and'#13#10'      NS.DTENTRADA between :DATA1 and :DAT' +
+      'A2 and'#13#10'      NS.FILIAL = :FILIAL'#13#10#13#10
     MaxBlobSize = -1
     Params = <
       item
@@ -894,7 +897,7 @@ object DMIntegracao: TDMIntegracao
     Aggregates = <>
     Params = <>
     ProviderName = 'dspNota'
-    Left = 305
+    Left = 304
     Top = 320
     object cdsNotaID: TIntegerField
       FieldName = 'ID'
@@ -970,6 +973,14 @@ object DMIntegracao: TDMIntegracao
     end
     object cdsNotaBASE_ICMSSUBST: TFloatField
       FieldName = 'BASE_ICMSSUBST'
+    end
+    object cdsNotaNFECHAVEACESSO: TStringField
+      FieldName = 'NFECHAVEACESSO'
+      Size = 50
+    end
+    object cdsNotaNOME_CLIENTE: TStringField
+      FieldName = 'NOME_CLIENTE'
+      Size = 60
     end
   end
   object dsNota: TDataSource
