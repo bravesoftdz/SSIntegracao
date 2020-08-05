@@ -486,6 +486,7 @@ type
     cdsNotaBASE_ICMSSUBST: TFloatField;
     cdsNotaNFECHAVEACESSO: TStringField;
     cdsNotaNOME_CLIENTE: TStringField;
+    cdsTitulos_PagosVLR_TAXA_BANCARIA: TFloatField;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }

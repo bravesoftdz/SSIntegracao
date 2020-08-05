@@ -4,7 +4,7 @@ object frmIntegracao: TfrmIntegracao
   Width = 1055
   Height = 651
   BorderIcons = [biSystemMenu]
-  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.23 09/04/2020)'
+  Caption = 'Integra'#231#227'o Cont'#225'bil   (v.1.0.24 05/08/2020)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -412,7 +412,7 @@ object frmIntegracao: TfrmIntegracao
             TabOrder = 0
           end
           object Edit1: TEdit
-            Left = 99
+            Left = 98
             Top = 36
             Width = 207
             Height = 19

@@ -372,30 +372,30 @@ object DMIntegracao: TDMIntegracao
       ' then D.ID_CONTABIL_OPE_BAIXA'#13#10'         when coalesce(D.ID_CONTA' +
       'BIL_OPE_BAIXA, 0) <= 0 and D.TIPO_ES = '#39'S'#39' then FC.ID_CONTABIL_O' +
       'PE_BAIXA_CPA'#13#10'       end ID_CONTABIL_OPE_BAIXA, substring(H.comp' +
-      'lemento from 1 for 150) HIST_DUPLICATA'#13#10#13#10'from DUPLICATA D'#13#10'inne' +
-      'r join DUPLICATA_HIST H on D.ID = H.ID'#13#10'inner join PESSOA P on D' +
-      '.ID_PESSOA = P.CODIGO'#13#10'inner join FILIAL F on D.FILIAL = F.ID'#13#10'l' +
-      'eft join FILIAL_CONTABIL FC on D.FILIAL = FC.ID'#13#10'left join CONTA' +
-      'S CT on H.ID_CONTA = CT.ID'#13#10'left join CONTA_ORCAMENTO ORC on D.I' +
-      'D_CONTA_ORCAMENTO = ORC.ID'#13#10'where H.DTLANCAMENTO between :DTINIC' +
-      'IAL and :DTFINAL and'#13#10'      D.FILIAL = :FILIAL and'#13#10'      H.TIPO' +
-      '_HISTORICO = '#39'PAG'#39'  ) aux'#13#10'left join contabil_ope cope'#13#10'on aux.i' +
-      'd_contabil_ope_baixa = cope.id'#13#10'where coalesce(cope.nao_gerar_ar' +
-      'q,'#39'N'#39') = '#39'N'#39#13#10#13#10
+      'lemento from 1 for 150) HIST_DUPLICATA, h.vlr_taxa_bancaria'#13#10#13#10'f' +
+      'rom DUPLICATA D'#13#10'inner join DUPLICATA_HIST H on D.ID = H.ID'#13#10'inn' +
+      'er join PESSOA P on D.ID_PESSOA = P.CODIGO'#13#10'inner join FILIAL F ' +
+      'on D.FILIAL = F.ID'#13#10'left join FILIAL_CONTABIL FC on D.FILIAL = F' +
+      'C.ID'#13#10'left join CONTAS CT on H.ID_CONTA = CT.ID'#13#10'left join CONTA' +
+      '_ORCAMENTO ORC on D.ID_CONTA_ORCAMENTO = ORC.ID'#13#10'where H.DTLANCA' +
+      'MENTO between :DTINICIAL and :DTFINAL and'#13#10'      D.FILIAL = :FIL' +
+      'IAL and'#13#10'      H.TIPO_HISTORICO = '#39'PAG'#39'  ) aux'#13#10'left join contab' +
+      'il_ope cope'#13#10'on aux.id_contabil_ope_baixa = cope.id'#13#10'where coale' +
+      'sce(cope.nao_gerar_arq,'#39'N'#39') = '#39'N'#39#13#10#13#10
     MaxBlobSize = -1
     Params = <
       item
-        DataType = ftUnknown
+        DataType = ftDate
         Name = 'DTINICIAL'
         ParamType = ptInput
       end
       item
-        DataType = ftUnknown
+        DataType = ftDate
         Name = 'DTFINAL'
         ParamType = ptInput
       end
       item
-        DataType = ftUnknown
+        DataType = ftInteger
         Name = 'FILIAL'
         ParamType = ptInput
       end>
@@ -412,7 +412,7 @@ object DMIntegracao: TDMIntegracao
     Aggregates = <>
     Params = <>
     ProviderName = 'dspTitulos_Pagos'
-    Left = 819
+    Left = 818
     Top = 159
     object cdsTitulos_PagosID: TIntegerField
       FieldName = 'ID'
@@ -541,6 +541,9 @@ object DMIntegracao: TDMIntegracao
     object cdsTitulos_PagosHIST_DUPLICATA: TStringField
       FieldName = 'HIST_DUPLICATA'
       Size = 250
+    end
+    object cdsTitulos_PagosVLR_TAXA_BANCARIA: TFloatField
+      FieldName = 'VLR_TAXA_BANCARIA'
     end
   end
   object sdsFilial_Contabil: TSQLDataSet

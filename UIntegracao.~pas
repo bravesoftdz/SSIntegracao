@@ -842,7 +842,10 @@ begin
         vVlr_Aux := StrToFloat(FormatFloat('0.00',fDMIntegracao.cdsTitulos_PagosVLR_MULTA.AsFloat))
       else
       if posex('<VLR_DESCONTO>',vTexto) = 1 then
-        vVlr_Aux := StrToFloat(FormatFloat('0.00',fDMIntegracao.cdsTitulos_PagosVLR_DESCONTOS.AsFloat));
+        vVlr_Aux := StrToFloat(FormatFloat('0.00',fDMIntegracao.cdsTitulos_PagosVLR_DESCONTOS.AsFloat))
+      else
+      if posex('<VLR_DESPESAS>',vTexto) = 1 then
+        vVlr_Aux := StrToFloat(FormatFloat('0.00',fDMIntegracao.cdsTitulos_PagosVLR_TAXA_BANCARIA.AsFloat));
       if vSD = '-' then
         vVlr_Aux := vVlr_Aux * -1;
       vVlr_Aux2 := vVlr_Aux2 + vVlr_Aux;
